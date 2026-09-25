@@ -14,7 +14,37 @@
     const summary = document.createElement('summary'); summary.textContent = '筛选与排序';
     filters.before(details); details.append(summary, filters);
   }
+  // Replace result chrome only. Original nodes stay available when reader mode is off.
+  const main = document.querySelector('#main');
+  const results = main?.querySelector('ol.work.index, ol.work-list');
+  const resultHeading = [...(main?.querySelectorAll('h2.heading,h3.heading') || [])].find(n => /Search Results|\bFound\b/i.test(n.textContent) && !n.closest('.blurb'));
+  if (main && (results || resultHeading)) {
+    const query = new URL(location.href).searchParams.get('work_search[query]') || new URL(location.href).searchParams.get('q') || '';
+    const count = [...main.querySelectorAll('h2,h3,p')].filter(n=>!n.closest('.blurb,form')).map(n=>n.textContent.match(/([\d,]+)\s+(?:Found|Works?\b)/i)?.[1]).find(Boolean);
+    const compact=document.createElement('div'); compact.className='cl-results-header';
+    const info=document.createElement('div'), title=document.createElement('h2'), meta=document.createElement('p');
+    title.textContent=query ? `“${query}”` : '作品'; meta.textContent=count ? `${count} 部作品` : '探索故事';
+    info.append(title,meta); compact.append(info);
+    const edit=[...main.querySelectorAll('a')].find(a=>!a.closest('.blurb') && /^(Edit (Your )?Search|编辑搜索)$/i.test(a.textContent.trim()));
+    const action=document.createElement('a'); action.textContent='筛选';
+    const editUrl=edit ? new URL(edit.href,location.href) : new URL('/works/search',location.origin);
+    action.href=editUrl.origin===location.origin ? editUrl.href : '/works/search';
+    if(filters) action.addEventListener('click',event=>{event.preventDefault();const details=filters.closest('details');if(details)details.open=true;filters.scrollIntoView({block:'start',behavior:'smooth'});});
+    compact.append(action);
+    for(const node of main.querySelectorAll('h2.heading,h3.heading,p,.work-search')) {
+      if(node.closest('.blurb,form') || node.contains(results)) continue;
+      if(/Search Results|[\d,]+\s+(?:Found|Works?\b)|^\s*You searched for:/i.test(node.textContent)) node.classList.add('cl-search-original');
+    }
+    edit?.closest('.actions')?.classList.add('cl-search-original');
+    main.prepend(compact);
+  }
   window.ChapterlightMobile = {
+    tap(x,y) {
+      if(!document.documentElement.classList.contains('cl-reading') || getSelection()?.toString()) return {};
+      const target=document.elementFromPoint(x*innerWidth,y*innerHeight);
+      if(!target || target.closest('a,button,input,textarea,select,summary,[contenteditable=true]')) return {};
+      return {intent:'controls'};
+    },
     state() {
       return { reading: document.documentElement.classList.contains('cl-reading'),
         enabled: $('#reader-switch')?.getAttribute('aria-checked') === 'true',

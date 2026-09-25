@@ -44,10 +44,15 @@ import java.util.Comparator;
 public final class MainActivity extends AppCompatActivity {
     private ReaderUi ui;
     private WebView web;
-    private LinearLayout root, header, dock, nativePage;
+    private LinearLayout header, dock, nativePage;
+    private FrameLayout root;
+    private boolean controlsVisible, wasReading;
+    private float touchX,touchY;
+    private long touchTime;
+    private boolean singleTouch;
     private FrameLayout body;
     private ProgressBar progress;
-    private TextView error, pageStatus, previousPage, nextPage;
+    private TextView error, pageStatus, previousPage, nextPage, quietPageStatus;
     private SharedPreferences preferences;
     private UpdateManager updater;
     private ReaderAssets assets;
@@ -75,17 +80,20 @@ public final class MainActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         WindowCompat.getInsetsController(getWindow(),getWindow().getDecorView()).setAppearanceLightStatusBars(true);
         WindowCompat.getInsetsController(getWindow(),getWindow().getDecorView()).setAppearanceLightNavigationBars(true);
-        root = ui.column(); root.setBackgroundColor(ReaderUi.PAPER);
+        root = new FrameLayout(this); root.setBackgroundColor(ReaderUi.PAPER);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-            androidx.core.graphics.Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
+            androidx.core.graphics.Insets bars = insets.getInsets((reading()?0:WindowInsetsCompat.Type.systemBars()) | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
             v.setPadding(bars.left,bars.top,bars.right,bars.bottom); return insets;
         });
-        header = ui.row(); header.setPadding(ui.dp(12),ui.dp(3),ui.dp(12),ui.dp(3)); root.addView(header,new LinearLayout.LayoutParams(-1,-2));
+        body = new FrameLayout(this); root.addView(body,new FrameLayout.LayoutParams(-1,-1));
+        header = new GlassSurface(this,body,()->ui.dark); header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setPadding(ui.dp(6),ui.dp(3),ui.dp(6),ui.dp(3));
+        FrameLayout.LayoutParams top=new FrameLayout.LayoutParams(-1,-2,Gravity.TOP); top.setMargins(ui.dp(12),ui.dp(8),ui.dp(12),0); root.addView(header,top);
         progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
         progress.setProgressTintList(android.content.res.ColorStateList.valueOf(ReaderUi.ACCENT));
-        root.addView(progress,new LinearLayout.LayoutParams(-1,ui.dp(2)));
-        error = ui.text("",14,false); error.setPadding(ui.dp(20),ui.dp(12),ui.dp(20),ui.dp(12)); error.setVisibility(View.GONE); root.addView(error);
-        body = new FrameLayout(this); root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+        FrameLayout.LayoutParams loading=new FrameLayout.LayoutParams(-1,ui.dp(2),Gravity.TOP); loading.topMargin=ui.dp(68); root.addView(progress,loading);
+        error = ui.text("",14,false); error.setPadding(ui.dp(20),ui.dp(12),ui.dp(20),ui.dp(12)); error.setVisibility(View.GONE); error.setBackgroundColor(ui.paper());
+        FrameLayout.LayoutParams failure=new FrameLayout.LayoutParams(-1,-2,Gravity.TOP); failure.topMargin=ui.dp(72); root.addView(error,failure);
         web = new WebView(this); web.setBackgroundColor(ReaderUi.PAPER); web.setFocusableInTouchMode(true);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(true);
@@ -111,7 +119,7 @@ public final class MainActivity extends AppCompatActivity {
                 return true;
             }
             @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
-                ready = false; reader = new JSONObject(); error.setVisibility(View.GONE); renderChrome();
+                ready = false; reader = new JSONObject(); controlsVisible=false; error.setVisibility(View.GONE); renderChrome();
             }
             @Override public void onPageFinished(WebView view, String url) {
                 if (!UrlPolicy.isReaderUrl(url) || !url.equals(view.getUrl())) return;
@@ -126,7 +134,11 @@ public final class MainActivity extends AppCompatActivity {
         });
         web.setDownloadListener((url,agent,disposition,type,length) -> { if (UrlPolicy.isWebUrl(url)) openExternal(url); });
         body.addView(web,new FrameLayout.LayoutParams(-1,-1));
-        dock = ui.column(); dock.setPadding(ui.dp(18),ui.dp(8),ui.dp(18),ui.dp(12)); root.addView(dock);
+        dock = ui.column(); dock.setPadding(ui.dp(18),ui.dp(8),ui.dp(18),ui.dp(12)); FrameLayout.LayoutParams bottom=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM); root.addView(dock,bottom);
+        quietPageStatus=ui.text("",11,false); quietPageStatus.setGravity(Gravity.CENTER); quietPageStatus.setVisibility(View.GONE);
+        FrameLayout.LayoutParams quiet=new FrameLayout.LayoutParams(-1,ui.dp(18),Gravity.BOTTOM); quiet.bottomMargin=ui.dp(3); root.addView(quietPageStatus,quiet);
+        installReadingGestures();
+        web.setOnScrollChangeListener((v,x,y,oldX,oldY)->refreshGlass());
         setContentView(root);
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true) {
             @Override public void handleOnBackPressed() { goBack(); }
@@ -160,13 +172,18 @@ public final class MainActivity extends AppCompatActivity {
         String signature = section + reading() + reader.optBoolean("enabled") + reader.optString("title") + reader.optString("theme") + siteName();
         if (signature.equals(lastChrome)) { updatePageStatus(); return; }
         lastChrome = signature;
+        if(reading() && !wasReading) controlsVisible=((android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled();
+        wasReading=reading();
         ui.dark = reading() && reader.optString("theme").equals("dark");
         root.setBackgroundColor(ui.paper());
+        FrameLayout.LayoutParams contentBounds=(FrameLayout.LayoutParams)body.getLayoutParams();
+        boolean original=section.equals("discover") && ready && !reader.optBoolean("enabled");
+        contentBounds.topMargin=original?ui.dp(74):0; contentBounds.bottomMargin=original?ui.dp(88):0; body.setLayoutParams(contentBounds);
         WindowCompat.getInsetsController(getWindow(),getWindow().getDecorView()).setAppearanceLightStatusBars(!ui.dark);
         WindowCompat.getInsetsController(getWindow(),getWindow().getDecorView()).setAppearanceLightNavigationBars(!ui.dark);
         header.removeAllViews(); dock.removeAllViews();
         if (reading()) {
-            header.addView(ui.iconButton("返回", "back", this::goBack));
+            header.addView(ui.iconButton("返回", "back", this::backToPage));
             TextView title = ui.text(reader.optString("title","正在阅读"),16,true);
             title.setSingleLine(true); title.setEllipsize(TextUtils.TruncateAt.END);
             header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
@@ -177,34 +194,37 @@ public final class MainActivity extends AppCompatActivity {
             pages.addView(previousPage);
             pageStatus = ui.text("",12,false); pageStatus.setTextColor(ui.muted()); pageStatus.setGravity(Gravity.CENTER);
             pages.addView(pageStatus,new LinearLayout.LayoutParams(0,-2,1)); pages.addView(nextPage);
-            dock.setPadding(ui.dp(18),0,ui.dp(18),ui.dp(8)); dock.addView(pages,new LinearLayout.LayoutParams(-1,ui.dp(48)));
-            LinearLayout controls = ui.row(); controls.setPadding(ui.dp(6),ui.dp(2),ui.dp(6),ui.dp(2)); controls.setBackground(ui.glass()); controls.setElevation(ui.dp(3));
+            dock.setPadding(ui.dp(18),0,ui.dp(18),ui.dp(8)); GlassSurface readingTools=new GlassSurface(this,body,()->ui.dark); readingTools.setOrientation(LinearLayout.VERTICAL);
+            readingTools.addView(pages,new LinearLayout.LayoutParams(-1,ui.dp(48))); dock.addView(readingTools);
+            LinearLayout controls = ui.row(); controls.setPadding(ui.dp(6),ui.dp(2),ui.dp(6),ui.dp(2));
             controls.addView(ui.button("目录","contents",this::showChapters),new LinearLayout.LayoutParams(0,-2,1));
             controls.addView(ui.button("书签","bookmark",this::saveBookmark),new LinearLayout.LayoutParams(0,-2,1));
             controls.addView(ui.button("排版","type",this::showAppearance),new LinearLayout.LayoutParams(0,-2,1));
-            dock.addView(controls); updatePageStatus();
+            readingTools.addView(controls); updatePageStatus();
         } else {
             TextView brand = ui.text(section.equals("library") ? "书架" : section.equals("profile") ? "我的" : "发现",23,true);
             brand.setPadding(ui.dp(8),0,0,0); header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
-            TextView source = ui.button(siteName()+"⌄",null,this::showSites); source.setTextSize(13); source.setBackground(ui.glass());
+            TextView source = ui.button(siteName()+"⌄",null,this::showSites); source.setTextSize(13); source.setBackground(ui.surface(0x45FFFFFF,24));
             header.addView(source);
             if (section.equals("discover")) { header.addView(ui.iconButton("搜索作品","search",this::showSearch)); header.addView(ui.iconButton("更多操作","more",this::showMenu)); }
             dock.setPadding(ui.dp(18),ui.dp(8),ui.dp(18),ui.dp(12));
-            LinearLayout tabs = ui.row(); tabs.setPadding(ui.dp(5),ui.dp(5),ui.dp(5),ui.dp(5)); tabs.setBackground(ui.glass()); tabs.setElevation(ui.dp(4));
+            LinearLayout tabs = new GlassSurface(this,body,()->ui.dark); tabs.setGravity(Gravity.CENTER_VERTICAL); tabs.setPadding(ui.dp(5),ui.dp(5),ui.dp(5),ui.dp(5));
             String[] ids={"library","discover","profile"}, labels={"书架","发现","我的"};
             for (int i=0;i<ids.length;i++) {
                 final String id=ids[i]; TextView tab=ui.button(labels[i],null,() -> selectSection(id));
                 android.graphics.drawable.Drawable icon=ui.icon(id); icon.setBounds(0,0,ui.dp(22),ui.dp(22)); tab.setCompoundDrawables(null,icon,null,null); tab.setCompoundDrawablePadding(ui.dp(3)); tab.setTextSize(12);
                 tab.setPadding(ui.dp(8),ui.dp(6),ui.dp(8),ui.dp(6));
-                if (id.equals(section)) { tab.setBackground(ui.surface(0xE0DCEBE3,26)); tab.setTextColor(ReaderUi.ACCENT); tab.setSelected(true); }
+                if (id.equals(section)) { tab.setBackground(ui.surface(0x995FC1A0,26)); tab.setTextColor(ReaderUi.ACCENT); tab.setSelected(true); }
                 tabs.addView(tab,new LinearLayout.LayoutParams(0,-2,1));
             }
             dock.addView(tabs);
         }
+        applyImmersion();
     }
     private void updatePageStatus() {
         if (!reading() || pageStatus == null) return;
         pageStatus.setText(reader.optString("mode").equals("paged") ? reader.optString("page") : reader.optString("percentage"));
+        quietPageStatus.setText(pageStatus.getText()); quietPageStatus.setTextColor(ui.muted());
         previousPage.setEnabled(reader.optBoolean("previous") || !reader.optString("previousChapter").isEmpty());
         nextPage.setEnabled(reader.optBoolean("next") || !reader.optString("nextChapter").isEmpty());
         previousPage.setAlpha(previousPage.isEnabled()?1f:.3f); nextPage.setAlpha(nextPage.isEnabled()?1f:.3f);
@@ -227,7 +247,7 @@ public final class MainActivity extends AppCompatActivity {
             catch(Exception ignored) { if(callback!=null) callback.accept(new JSONObject()); }
         });
     }
-    private void action(String name) { call("action("+JSONObject.quote(name)+")", ignored -> handler.postDelayed(this::refreshReader,100)); }
+    private void action(String name) { handler.postDelayed(this::refreshGlass,400); call("action("+JSONObject.quote(name)+")", ignored -> handler.postDelayed(this::refreshReader,100)); }
     private void setting(String name,Object value) { call("setting("+JSONObject.quote(name)+","+JSONObject.quote(String.valueOf(value))+")",ignored -> refreshReader()); }
     private void cacheLibrary(Runnable after) {
         call("snapshot()", snapshot -> {
@@ -247,8 +267,8 @@ public final class MainActivity extends AppCompatActivity {
         if(nativePage!=null) body.removeView(nativePage);
         web.setVisibility(View.GONE); progress.setVisibility(View.GONE); error.setVisibility(View.GONE);
         nativePage=ui.column(); ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);
-        LinearLayout content=ui.column(); content.setPadding(ui.dp(22),ui.dp(20),ui.dp(22),ui.dp(24));
-        scroll.addView(content); nativePage.addView(scroll,new LinearLayout.LayoutParams(-1,-1)); body.addView(nativePage,new FrameLayout.LayoutParams(-1,-1)); return content;
+        LinearLayout content=ui.column(); content.setPadding(ui.dp(22),ui.dp(90),ui.dp(22),ui.dp(110));
+        scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->refreshGlass()); scroll.addView(content); nativePage.addView(scroll,new LinearLayout.LayoutParams(-1,-1)); body.addView(nativePage,new FrameLayout.LayoutParams(-1,-1)); return content;
     }
     private void space(LinearLayout parent,int height) { parent.addView(new View(this),new LinearLayout.LayoutParams(1,ui.dp(height))); }
     private void note(LinearLayout parent,String message) { TextView text=ui.text(message,14,false); text.setTextColor(ui.muted()); text.setLineSpacing(ui.dp(4),1); parent.addView(text); }
@@ -291,6 +311,9 @@ public final class MainActivity extends AppCompatActivity {
         View grabber=new View(this); grabber.setBackground(ui.surface(0xFFCAD5CD,4)); LinearLayout.LayoutParams grip=new LinearLayout.LayoutParams(ui.dp(34),ui.dp(4)); grip.gravity=Gravity.CENTER; grip.bottomMargin=ui.dp(10); content.addView(grabber,grip);
         LinearLayout heading=ui.row(); heading.addView(ui.text(title,23,true),new LinearLayout.LayoutParams(0,-2,1)); heading.addView(ui.iconButton("关闭","close",()->sheet.dismiss())); content.addView(heading); space(content,16);
         ScrollView scroll=new ScrollView(this); scroll.addView(content); sheet.setContentView(scroll); sheet.show();
+        sheet.getWindow().setDimAmount(.2f);
+        if(android.os.Build.VERSION.SDK_INT>=31) { sheet.getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND); WindowManager.LayoutParams attributes=sheet.getWindow().getAttributes(); attributes.setBlurBehindRadius(ui.dp(16)); sheet.getWindow().setAttributes(attributes); }
+        sheet.setOnDismissListener(dialog->applyImmersion());
         sheet.getBehavior().setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
         return content;
     }
@@ -354,7 +377,43 @@ public final class MainActivity extends AppCompatActivity {
     private void toast(String message) { Toast.makeText(this,message,Toast.LENGTH_SHORT).show(); }
     private void showError(String message) { error.setText(message); error.setVisibility(View.VISIBLE); }
     void openExternal(String url) { if(!UrlPolicy.isWebUrl(url)) return; try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(android.content.ActivityNotFoundException e){toast("没有可打开链接的浏览器");} }
+    private void refreshGlass() {
+        header.invalidate(); for(int i=0;i<dock.getChildCount();i++) dock.getChildAt(i).invalidate();
+    }
+    private void applyImmersion() {
+        boolean active=reading();
+        header.setVisibility(active&&!controlsVisible?View.GONE:View.VISIBLE);
+        dock.setVisibility(active&&!controlsVisible?View.GONE:View.VISIBLE);
+        quietPageStatus.setVisibility(active&&!controlsVisible?View.VISIBLE:View.GONE);
+        if(active) progress.setVisibility(View.GONE);
+        androidx.core.view.WindowInsetsControllerCompat bars=WindowCompat.getInsetsController(getWindow(),root);
+        bars.setSystemBarsBehavior(androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if(active) bars.hide(WindowInsetsCompat.Type.systemBars()); else bars.show(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.requestApplyInsets(root); refreshGlass();
+    }
+    private void toggleReadingControls() { controlsVisible=!controlsVisible; applyImmersion(); }
+    @SuppressLint("ClickableViewAccessibility")
+    private void installReadingGestures() {
+        ViewCompat.addAccessibilityAction(web,"显示或隐藏阅读工具",(view,args)->{if(reading())toggleReadingControls();return reading();});
+        web.setOnTouchListener((view,event)->{
+            int action=event.getActionMasked();
+            if(action==android.view.MotionEvent.ACTION_DOWN) {touchX=event.getX();touchY=event.getY();touchTime=event.getEventTime();singleTouch=true;}
+            else if(action==android.view.MotionEvent.ACTION_POINTER_DOWN || action==android.view.MotionEvent.ACTION_CANCEL) singleTouch=false;
+            else if(action==android.view.MotionEvent.ACTION_UP && reading() && singleTouch && event.getEventTime()-touchTime<300
+                    && Math.hypot(event.getX()-touchX,event.getY()-touchY)<ui.dp(10)) {
+                float x=event.getX()/web.getWidth(),y=event.getY()/web.getHeight();
+                call("tap("+x+","+y+")",response->{String intent=response.optString("intent");
+                    if(intent.equals("controls")) toggleReadingControls();
+                });
+            }
+            return false;
+        });
+    }
     private void goBack() {
+        if(reading() && controlsVisible && (sheet==null || !sheet.isShowing())) {controlsVisible=false;applyImmersion();return;}
+        backToPage();
+    }
+    private void backToPage() {
         if(sheet!=null&&sheet.isShowing()){sheet.dismiss();return;}
         if(!section.equals("discover")){section="discover";showWeb();renderChrome();}
         else if(web.canGoBack()) web.goBack(); else finish();

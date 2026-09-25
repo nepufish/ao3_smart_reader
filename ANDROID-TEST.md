@@ -1,28 +1,29 @@
-# Android 0.8.0 validation
+# Android 0.8.1 validation
 
 Built with JDK 17, Gradle 8.13, Android Gradle Plugin 8.13.2, Android SDK 36 and build-tools 35.0.0.
 
 ## Automated checks
 
-- 36 Node tests pass, covering the shared desktop reader, Android storage, swipe filtering, native settings adapter and safe library snapshots.
+- 38 Node tests pass, covering the shared desktop reader, Android storage, swipe filtering, native settings, safe library snapshots, tap exclusions and compact search metadata.
 - 4 Android JUnit tests pass for exact HTTPS origins and GitHub release metadata/asset validation.
 - `testDebugUnitTest`, `lintDebug` and `assembleRelease` pass. Android lint reports **no issues**.
-- Package: `io.github.chapterlight.reader`; version `0.8.0` / code `800`; minimum API 26, target API 36.
-- `apksigner verify` passes. Release certificate SHA-256: `a88210efe5ab7111ba17da86dd81de87f7f0e85a2e05a383e9fbb391363e9cea` (unchanged from 0.7.1).
+- Package: `io.github.chapterlight.reader`; version `0.8.1` / code `801`; minimum API 26, target API 36.
+- `apksigner verify` passes. Release certificate SHA-256: `a88210efe5ab7111ba17da86dd81de87f7f0e85a2e05a383e9fbb391363e9cea` (unchanged).
 - APK reader/mobile assets match workspace source byte-for-byte. APK SHA-256 matches `update.json`.
+- Compiled release configuration and APK contain `nepufish/ao3_smart_reader` as the updater repository.
 
 ## Android emulator
 
-A dedicated Android 15 / API 35 Pixel 6 emulator was used, with Chromium WebView and the app's real native views. `MobileFlowTest` passes at the default 411dp width / normal text and at 360dp width / 150% system text. Its original Chinese fixtures avoid relying on account state or network access.
+The new reading and search UI passed `MobileFlowTest` on a dedicated Android 15 / API 35 Pixel 6 emulator, at its default 411dp width and normal text size. It uses real native views and Chromium with original Chinese fixtures, independent of account/network access.
 
-The flow checks `/works` at launch, work-list width, hidden desktop UI, keyboard-aware native search, original-site switch off/on, paging, bookmark persistence, scroll/paged switching, night mode, native history/bookmarks and rotation. Screenshots of the list, reader, typography, search keyboard and library were visually inspected. The test exposed a stale reading-switch state; the page menu now reads current state before constructing its switch.
+The flow verifies `/works` at launch, search header cleanup, work-list width, native search, original-site mode off/on, default hidden reading controls, a visible quiet page indicator, actual quick touch events toggling controls, a held touch not toggling them, unchanged viewport dimensions, paging, bookmarks, typography, night mode, native history and rotation. Actual screenshots were inspected and presented for review before release.
 
-The previous published signed 0.7.1 APK installs on the emulator, and the signed 0.8.0 APK installs over it with `adb install -r`. Android accepts the signing identity and version upgrade. This is an installation compatibility test; it does not claim the complete in-app download/unknown-sources permission flow was exercised.
+The previous 0.8.0 UI was additionally tested at 360dp / 150% text, and signed 0.7.1 to 0.8.0 installation compatibility was tested. Those are historical checks, not new 0.8.1 coverage. The new APK retains the app ID and certificate and increments the version code, but this release's full download/installer flow and upgrade installation have not been exercised on a physical phone.
 
-No physical phone was tested. Live-site login, network challenges, arbitrary work skins, and external browser installation prompts still require device testing. The emulator encountered AO3's network challenge during a live request; fixture results do not establish live-site access.
+No physical phone was tested. Live-site login, network challenges, arbitrary work skins, older Android blur fallback, and external installation prompts still require device testing. AO3 previously presented a network challenge to the emulator; fixture results do not establish live-site access.
 
-## GitHub availability
+## Repository migration
 
-GitHub previously reported `Actions has been disabled for this user` for owner `cczzaa101`; the committed workflow and signing secrets have a documented local build/publish fallback.
+The release target and default updater configuration are now `nepufish/ao3_smart_reader`. Versions through 0.8.0 still check the previous repository, so existing users must install this signed APK once over their existing app to switch update sources. Do not uninstall or change signing keys. New versions check the new repository via **我的 → 检查更新**.
 
-Authenticated GitHub access can retrieve the public repository and release assets. The anonymous latest-release API still returns 404 on this test network. Direct in-app update checks need that access restored; the app offers **打开发布页** to use a signed-in external browser. No automatic download/install success is claimed while this restriction remains.
+GitHub Actions uses the current repository name automatically. Local builds use `android/gradle.properties`. The existing private signing configuration is deliberately retained across the move. No signing keys or credentials are committed.

@@ -26,7 +26,7 @@ html.cl-android.cl-browsing #inner { background:#f6f8f5 !important; margin:0 !im
 html.cl-android.cl-browsing #header,
 html.cl-android.cl-browsing #footer,
 html.cl-android.cl-browsing .landmark { display:none !important; }
-html.cl-android.cl-browsing #main { float:none !important; box-sizing:border-box; width:100% !important; max-width:760px !important; margin:0 auto !important; padding:20px 16px 32px !important; }
+html.cl-android.cl-browsing #main { float:none !important; box-sizing:border-box; width:100% !important; max-width:760px !important; margin:0 auto !important; padding:84px 16px 112px !important; }
 html.cl-android.cl-browsing #main h2.heading,
 html.cl-android.cl-browsing #main > h1 { font:600 24px/1.4 system-ui,sans-serif; margin:0 0 18px; color:#1d302d; }
 html.cl-android.cl-browsing a { color:#216755; text-decoration:none; overflow-wrap:anywhere; }
@@ -68,3 +68,21 @@ html.cl-android.cl-reading.cl-paged #workskin .userstuff img { max-height:calc(1
 html.cl-android.cl-browsing ol.work.index,html.cl-android.cl-browsing .blurb ul.tags { list-style:none; }
 html.cl-android.cl-browsing .blurb .fandoms { font-weight:400; }
 html.cl-android.cl-browsing .blurb .required-tags { font-size:12px; line-height:1.5; }
+
+/* One compact results heading; filters/actions keep their original targets and forms. */
+.cl-results-header { display:none; }
+html.cl-android.cl-browsing .cl-search-original { display:none !important; }
+html.cl-android.cl-browsing .cl-results-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 20px; font-family:system-ui,sans-serif; }
+html.cl-android.cl-browsing .cl-results-header > div { min-width:0; }
+html.cl-android.cl-browsing .cl-results-header h2 { margin:0; font:600 21px/1.45 system-ui,sans-serif; overflow-wrap:anywhere; }
+html.cl-android.cl-browsing .cl-results-header p { margin:4px 0 0; font:13px/1.6 system-ui,sans-serif; color:#556a65; }
+html.cl-android.cl-browsing .cl-results-header > a { display:flex; align-items:center; justify-content:center; flex:none; min-width:60px; min-height:44px; border:1px solid #c9d9d0; border-radius:22px; font:500 14px system-ui; }
+html.cl-android.cl-browsing .actions { float:none!important; width:auto!important; clear:both; margin:12px 0; padding:0; }
+html.cl-android.cl-browsing .blurb .header a { border-bottom:0!important; text-decoration:none!important; }
+html.cl-android.cl-browsing .blurb .summary { font-size:14px; line-height:1.7; }
+html.cl-android.cl-browsing .blurb .summary p { margin:6px 0; }
+html.cl-android.cl-browsing .blurb .tags { line-height:1.65!important; }
+html.cl-android.cl-browsing .blurb .tags a { display:inline; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+html.cl-android.cl-browsing .blurb dl.stats { font-size:11px; gap:3px 6px; }
+html.cl-android.cl-reading #workskin .summary > h3,
+html.cl-android.cl-reading #workskin .notes > h3 { border:0!important; padding:0!important; margin-bottom:12px!important; }

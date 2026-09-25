@@ -23,14 +23,16 @@ metadata = {'versionCode': int(version['versionCode']), 'versionName': version['
 (output / 'SHA256SUMS').write_text(f'{digest}  {apk.name}\n', encoding='utf-8')
 (output / 'release-notes.md').write_text(f'''章灯 Chapterlight {version['versionName']} for Android
 
-- Redesigned for phones: native 书架 / 发现 / 我的 navigation, full-width content and glass-inspired controls.
-- Opens `/works` by default; switch between AO3 and AO3-cn without an address bar.
-- Mobile work cards, native search, chapter and typography sheets; no desktop sidebar.
-- Animated paging, swipe navigation, bookmarks, saved positions and a coordinated night theme.
-- 我的 → 检查更新 checks signed APK updates through GitHub Releases.
+- Fullscreen reading with a subtle page indicator; a quick tap reveals or hides the tools without moving the text. Swipe to turn pages.
+- Floating glass controls with blurred content on Android 12+ and a translucent fallback on Android 8–11.
+- Cleaner search results: compact query/count header, filter action, and readable cards retaining ratings and warnings.
+- Opens `/works` by default; AO3/AO3-cn switching, bookmarks, saved positions, typography and night mode remain available.
+- Future updates use https://github.com/nepufish/ao3_smart_reader through 我的 → 检查更新.
 - Tested on an Android 15 emulator with original Chinese fixtures. Live-site login/challenges and physical-phone behavior still need device testing.
 
 Download **Chapterlight.apk** below. Requires Android 8.0 or newer and an up-to-date Android System WebView. Android will ask you to allow installation from your browser or Chapterlight. Future releases signed with the same key install over this app and retain its data.
+
+**Moving from the previous repository:** download and install this APK once over your existing signed Chapterlight app. Do not uninstall first. Versions through 0.8.0 still check the previous repository; this version switches future checks to the new repository. The app ID and signing key are unchanged.
 
 Reader data stays in the app and is separate for each website origin; it does not sync with the desktop extension. The app does not bypass site/network restrictions.
 ''', encoding='utf-8')

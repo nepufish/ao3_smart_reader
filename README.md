@@ -4,11 +4,11 @@ A dependency-free Chrome / Edge extension focused on reading Chinese novels on A
 
 ## Android app
 
-Version 0.8.0 is redesigned for phones: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
+Version 0.8.1 adds fullscreen reading, tap-to-reveal glass controls and a compact search header: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
 
-Download **Chapterlight.apk** from [GitHub Releases](https://github.com/cczzaa101/ao3_friendly_reader/releases/latest). Android 8.0+ with a current Android System WebView is required. See [Android build/release instructions](android/README.md), [design notes](ANDROID-DESIGN.md), and [validation coverage](ANDROID-TEST.md).
+Download **Chapterlight.apk** from [GitHub Releases](https://github.com/nepufish/ao3_smart_reader/releases/latest). Android 8.0+ with a current Android System WebView is required. See [Android build/release instructions](android/README.md), [design notes](ANDROID-DESIGN.md), and [validation coverage](ANDROID-TEST.md).
 
-<p><img src="docs/android/discover.png" width="240" alt="Native Android discovery screen with original test stories"> <img src="docs/android/reader.png" width="240" alt="Chinese reading with native bottom controls"> <img src="docs/android/library.png" width="240" alt="Native reading history and bookmarks"></p>
+<p><img src="docs/android/discover.png" width="240" alt="Native Android discovery screen with original test stories"> <img src="docs/android/reader.png" width="240" alt="Fullscreen Chinese reading with a subtle page indicator"> <img src="docs/android/library.png" width="240" alt="Native reading history and bookmarks"></p>
 
 Screenshots use original test stories on an Android 15 emulator. The desktop extension is described below.
 

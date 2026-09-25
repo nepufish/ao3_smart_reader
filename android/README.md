@@ -5,9 +5,9 @@ Android 8.0+ app with native navigation, library screens and Material bottom she
 - **发现**: full-width AO3 work lists, native search sheet, original search/filter forms, and readable work cards. Ratings and warning tags remain available.
 - **书架**: recent reading and manual bookmarks, including the saved chapter/page and resume links. Records from each visited site are cached locally.
 - **我的**: site selection, login, fandom browsing, GitHub updates and feedback.
-- **Reading**: animated paging by default, horizontal swipe, previous/next controls, chapter selection, bookmarks, native typography sheet and night theme. The page menu contains the reading-mode switch to restore the original website.
+- **Reading**: fullscreen text with a subtle page indicator. Quick taps reveal or hide the floating tools without reflow; long presses retain selection. Animated paging by default, horizontal swipe, previous/next controls, chapter selection, bookmarks, native typography sheet and night theme. The page menu contains the reading-mode switch to restore the original website.
 
-The visual treatment is inspired by Liquid Glass: rounded translucent navigation, subtle edge highlights, muted green selection and clear content surfaces. It uses native Android views and gestures; it is not Apple's proprietary material. Font size follows Android scaling in the native screens; story size, font and line height can be customized independently.
+The visual treatment is inspired by Liquid Glass: rounded translucent navigation, sampled background blur on Android 12+ (tinted fallback on Android 8–11), subtle edge highlights, muted green selection and clear content surfaces. It uses native Android views and gestures; it is not Apple's proprietary material. Font size follows Android scaling in the native screens; story size, font and line height can be customized independently.
 
 Cookies, bookmarks and progress remain in app storage across signed upgrades. Reader settings/history are stored per website origin and are separate from the desktop extension. No JavaScript-to-native bridge or GitHub token is exposed to webpages. File/content URL access is disabled. Update Android System WebView if the reader does not render correctly. Shared AO3 URLs can be opened from Android's Share menu. Unsupported external HTTPS links open in the browser.
 
@@ -17,23 +17,25 @@ Install JDK 17 and Android SDK platform 36 plus build-tools 35.0.0. Set `ANDROID
 
 ```sh
 cd android
-./gradlew testDebugUnitTest lintDebug assembleDebug -PreleaseRepository=cczzaa101/ao3_friendly_reader
+./gradlew testDebugUnitTest lintDebug assembleDebug -PreleaseRepository=nepufish/ao3_smart_reader
 ```
 
 On Windows use `gradlew.bat`. The Gradle wrapper pins Gradle 8.13; dependencies and Android Gradle Plugin versions are pinned. The build copies `extension/*.js` and `extension/*.css` into generated assets, with the mobile adapter in `app/src/main/assets`. Do not edit generated copies.
 
 ## GitHub Releases and updates
 
-Repository: https://github.com/cczzaa101/ao3_friendly_reader
+Repository: https://github.com/nepufish/ao3_smart_reader
 
 The native **我的 → 检查更新** menu reads the latest public GitHub Release and its `update.json`. It compares numeric `versionCode`, offers the new version, downloads `Chapterlight.apk`, checks SHA-256, package ID, version and signing certificate, then invokes Android's system installer. The user approves the installation. No silent installs or GitHub credentials are used. A failed check/download shows an error without touching reader data.
 
 If a release cannot be accessed anonymously, the error dialog offers **打开发布页**. Sign in to GitHub in that external browser if necessary, download the signed APK, and install it over the existing app. The direct in-app check requires public API/asset access and cannot work while GitHub returns anonymous 404 responses. The app never embeds a personal GitHub token.
 
+Versions through 0.8.0 point to the previous repository. Install the new signed APK once over the existing app to migrate future checks; keep the app ID and signing certificate unchanged and do not uninstall first.
+
 For a new release:
 
 1. Increment both values in `android/version.properties`.
-2. Push the commit and tag `android-vVERSION` (for example `android-v0.8.0`).
+2. Push the commit and tag `android-vVERSION` (for example `android-v0.8.1`).
 3. GitHub Actions runs reader tests, Android unit tests, lint and builds; then signs and publishes the release APK, `update.json` and `SHA256SUMS`.
 4. Users check for updates from 我的.
 
@@ -53,9 +55,9 @@ Local release builds use `CHAPTERLIGHT_KEYSTORE` (absolute file path), `CHAPTERL
 If GitHub Actions is disabled for the repository owner, build with `python tools/build-android-local.py --release`. This uses the environment above, or this workstation's private configuration in `~/.chapterlight/`. It runs checks and writes the signed APK and update metadata to `artifacts/android/`. Commit and push the version change, then publish:
 
 ```sh
-git tag android-v0.8.0
-git push origin android-v0.8.0
-gh release create android-v0.8.0 artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "Chapterlight 0.8.0 · Android" --notes-file artifacts/android/release-notes.md --latest
+git tag android-v0.8.1
+git push origin android-v0.8.1
+gh release create android-v0.8.1 artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "Chapterlight 0.8.1 · Android" --notes-file artifacts/android/release-notes.md --latest
 ```
 
 Use the new version in each command for subsequent releases. The in-app updater works with these manually published releases as well as Actions-generated releases.

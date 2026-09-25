@@ -20,6 +20,7 @@ if not env.get('JAVA_HOME') or not env.get('ANDROID_HOME'):
     raise SystemExit('Set JAVA_HOME to JDK 17 and ANDROID_HOME to Android SDK with platform 36 / build-tools 35.0.0.')
 env['PATH'] = str(pathlib.Path(env['JAVA_HOME']) / 'bin') + os.pathsep + env['PATH']
 if args.release and not env.get('CHAPTERLIGHT_KEYSTORE'):
+    # Preserve the existing signing identity across the repository move.
     signing = private / 'signing/ao3_friendly_reader.json'
     if not signing.exists():
         raise SystemExit('Release signing environment is missing. See android/README.md.')
@@ -28,7 +29,7 @@ if args.release and not env.get('CHAPTERLIGHT_KEYSTORE'):
         env['CHAPTERLIGHT_' + name] = data[field]
 wrapper = root / 'android' / ('gradlew.bat' if os.name == 'nt' else 'gradlew')
 tasks = ['testDebugUnitTest', 'lintDebug', 'assembleRelease' if args.release else 'assembleDebug']
-subprocess.run([str(wrapper), *tasks, '-PreleaseRepository=cczzaa101/ao3_friendly_reader', '--console=plain'], cwd=root / 'android', env=env, check=True)
+subprocess.run([str(wrapper), *tasks, '--console=plain'], cwd=root / 'android', env=env, check=True)
 if args.release:
     version = dict(line.split('=', 1) for line in (root / 'android/version.properties').read_text().splitlines() if '=' in line)
     import sys

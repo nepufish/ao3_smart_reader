@@ -5,6 +5,36 @@ const { JSDOM } = require('jsdom');
 const storage = fs.readFileSync('android/app/src/main/assets/storage.js', 'utf8');
 const mobile = fs.readFileSync('android/app/src/main/assets/mobile.js', 'utf8');
 
+test('reader tap reveals tools anywhere but preserves links, selection and browsing', () => {
+  const dom=new JSDOM('<div id="chapterlight-root"></div><p>故事正文</p><a href="#">注释</a>', {runScripts:'outside-only'});
+  const w=dom.window;
+  w.document.querySelector('#chapterlight-root').attachShadow({mode:'open'});
+  w.eval(mobile);
+  w.document.elementFromPoint=()=>w.document.querySelector('p');
+  assert.equal(w.ChapterlightMobile.tap(.5,.5).intent,undefined);
+  w.document.documentElement.classList.add('cl-reading');
+  assert.equal(w.ChapterlightMobile.tap(.1,.5).intent,'controls');
+  assert.equal(w.ChapterlightMobile.tap(.9,.5).intent,'controls');
+  w.document.elementFromPoint=()=>w.document.querySelector('a');
+  assert.equal(w.ChapterlightMobile.tap(.5,.5).intent,undefined);
+  w.document.elementFromPoint=()=>w.document.querySelector('p');
+  const selection=w.getSelection(),range=w.document.createRange();range.selectNodeContents(w.document.querySelector('p'));selection.addRange(range);
+  assert.equal(w.ChapterlightMobile.tap(.5,.5).intent,undefined);
+  w.close();
+});
+
+test('compact search header preserves warnings, forms and original search link', () => {
+  const dom=new JSDOM('<div id="chapterlight-root"></div><main id="main"><h2 class="heading">Search Results</h2><p>You searched for: 灯</p><h3 class="heading">1,758 Found</h3><h3 class="heading">Important notice</h3><ul class="actions"><li><a href="/works/search?edit_search=true">Edit Your Search</a></li></ul><ol class="work index"><li class="blurb"><h3 class="heading">Warning</h3></li></ol></main>',{url:'https://archiveofourown.org/works/search?work_search%5Bquery%5D=%E7%81%AF',runScripts:'outside-only'});
+  const w=dom.window;w.document.querySelector('#chapterlight-root').attachShadow({mode:'open'});w.eval(mobile);
+  assert.equal(w.document.querySelector('.cl-results-header h2').textContent,'“灯”');
+  assert.equal(w.document.querySelector('.cl-results-header p').textContent,'1,758 部作品');
+  assert.equal(w.document.querySelector('.cl-results-header a').getAttribute('href'),'https://archiveofourown.org/works/search?edit_search=true');
+  assert.equal(w.document.querySelector('.blurb h3').classList.contains('cl-search-original'),false);
+  assert.equal([...w.document.querySelectorAll('h3')].find(n=>n.textContent==='Important notice').classList.contains('cl-search-original'),false);
+  assert.equal(w.document.querySelectorAll('.cl-search-original').length,4);
+  w.close();
+});
+
 test('native shelf snapshot keeps positions and excludes off-site bookmark URLs', () => {
   const dom = new JSDOM('<div id="chapterlight-root"></div>', {url:'https://archiveofourown.org/works',runScripts:'outside-only'});
   const w=dom.window;

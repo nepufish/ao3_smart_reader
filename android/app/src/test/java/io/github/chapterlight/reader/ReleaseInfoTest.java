@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ReleaseInfoTest {
-    private static final String REPO = "cczzaa101/ao3_friendly_reader";
+    private static final String REPO = "nepufish/ao3_smart_reader";
     private JSONObject release() throws Exception {
         return new JSONObject().put("tag_name", "android-v0.7.0").put("draft", false).put("prerelease", false)
                 .put("assets", new JSONArray().put(new JSONObject().put("name", "Chapterlight.apk")
