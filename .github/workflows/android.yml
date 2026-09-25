@@ -27,6 +27,8 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: '13114758'
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - name: Android checks and debug APK
@@ -60,6 +62,8 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: '13114758'
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - name: Build signed release
