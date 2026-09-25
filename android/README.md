@@ -39,6 +39,18 @@ Repository Actions secrets required:
 
 Local release builds use `CHAPTERLIGHT_KEYSTORE` (absolute file path), `CHAPTERLIGHT_STORE_PASSWORD`, `CHAPTERLIGHT_KEY_PASSWORD` and `CHAPTERLIGHT_KEY_ALIAS` environment variables. The release key must be retained and backed up privately; losing it prevents compatible upgrades. Never commit keys or passwords. Debug APKs use a different certificate and cannot be upgraded with the release APK; install the release build for everyday use.
 
+### Local release fallback
+
+If GitHub Actions is disabled for the repository owner, build with `python tools/build-android-local.py --release`. This uses the environment above, or this workstation's private configuration in `~/.chapterlight/`. It runs checks and writes the signed APK and update metadata to `artifacts/android/`. Commit and push the version change, then publish:
+
+```sh
+git tag android-v0.7.0
+git push origin android-v0.7.0
+gh release create android-v0.7.0 artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "Chapterlight 0.7.0 · Android" --notes-file artifacts/android/release-notes.md --latest
+```
+
+Use the new version in each command for subsequent releases. The in-app updater works with these manually published releases as well as Actions-generated releases.
+
 ## Validation
 
 `npm test` covers reader behavior. Android JUnit tests cover origin allowlisting and release metadata/asset validation; `lintDebug` checks Android API compatibility. Build reports are attached to each Actions run. Before a release intended for broad use, check on a phone: site login/gate, paging and swipe, reload resume, independent bookmark, full/mini panel, native search, reader off/on, rotation/backgrounding, updater offline/rate-limit handling, and upgrade from the previous signed APK. CI build success alone is not a device test.

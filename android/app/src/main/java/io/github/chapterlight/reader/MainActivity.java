@@ -220,6 +220,9 @@ public final class MainActivity extends Activity {
         return readerScript;
     }
     private void goBack() { if (web.canGoBack()) web.goBack(); else finish(); }
+    // Android 13+ uses the OnBackInvokedDispatcher callback registered in onCreate;
+    // keep this entry point exclusively for the Android 8–12 back-button path.
+    @SuppressLint("GestureBackNavigation")
     @SuppressWarnings("deprecation") @Override public void onBackPressed() { goBack(); }
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
     @Override protected void onPause() { super.onPause(); web.onPause(); CookieManager.getInstance().flush(); }
