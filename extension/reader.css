@@ -1,0 +1,62 @@
+html.cl-reading { --cl-paper: #f6f3ec; --cl-ink: #343832; --cl-muted: #797c72; --cl-line: #dedfd4; background: var(--cl-paper) !important; color-scheme: light; scroll-padding-top: calc(95px + var(--cl-nav-height, 0px)); }
+html.cl-reading[data-cl-theme="light"] { --cl-paper: #fff; --cl-ink: #303731; --cl-muted: #727a73; --cl-line: #e1e6df; }
+html.cl-reading[data-cl-theme="dark"] { --cl-paper: #202723; --cl-ink: #dadfd5; --cl-muted: #a1aea3; --cl-line: #414d43; color-scheme: dark; }
+html.cl-reading body, html.cl-reading #outer, html.cl-reading #inner, html.cl-reading #main, html.cl-reading #workskin { background: var(--cl-paper) !important; color: var(--cl-ink) !important; border: 0 !important; box-shadow: none !important; }
+html.cl-reading body { margin: 0 !important; padding: 0 !important; }
+html.cl-reading #header:not(.cl-site-header), html.cl-reading #footer, html.cl-reading #main > h2, html.cl-reading #main > .navigation, html.cl-reading #main > .work.meta, html.cl-reading #main > .flash, html.cl-reading #main > .landmark { display: none !important; }
+html.cl-reading #inner, html.cl-reading #outer { margin: 0 !important; padding: 0 !important; }
+html.cl-reading #main { box-sizing: border-box; width: 100% !important; max-width: none !important; margin: 0 !important; padding: calc(122px + var(--cl-nav-height, 0px)) 28px 120px !important; float: none !important; }
+html.cl-reading #workskin { max-width: var(--cl-width, 700px) !important; width: 100% !important; margin: 0 auto !important; padding: 0 !important; }
+html.cl-reading #workskin .userstuff { font-family: var(--cl-font, "Songti SC", "SimSun", serif) !important; font-size: var(--cl-size, 22px) !important; line-height: var(--cl-leading, 2) !important; line-break: strict; word-break: normal; overflow-wrap: break-word; }
+html.cl-reading #workskin .userstuff p { margin-top: 0; margin-bottom: var(--cl-gap, .8em); }
+html.cl-reading #workskin .userstuff { font-weight: var(--cl-weight, 400); letter-spacing: var(--cl-tracking, 0em); }
+html.cl-reading.cl-indent #workskin #chapters .userstuff p.cl-indentable { text-indent: 2em; }
+html.cl-reading #workskin .userstuff img { max-width: 100%; height: auto; }
+html.cl-reading #workskin .preface { margin: 0 0 42px !important; padding: 0 !important; }
+html.cl-reading #workskin > .preface > .title { font-family: var(--cl-font, "SimSun", serif) !important; font-size: 36px !important; font-weight: normal; line-height: 1.6 !important; text-align: center; letter-spacing: .08em; margin: 8px 0 18px !important; color: var(--cl-ink); }
+html.cl-reading #workskin .byline { font: 14px/1.6 system-ui, sans-serif !important; text-align: center; margin-bottom: 42px; }
+html.cl-reading #workskin a { color: inherit; text-decoration-color: var(--cl-muted); }
+html.cl-reading #workskin .preface h3, html.cl-reading #workskin .preface h2 { font: 500 14px/1.6 system-ui, sans-serif; color: var(--cl-muted); }
+html.cl-reading #workskin .summary, html.cl-reading #workskin .notes { border-left: 2px solid var(--cl-line); padding-left: 22px; margin: 28px 0; }
+html.cl-reading #workskin .summary .userstuff, html.cl-reading #workskin .notes .userstuff { font-size: 16px !important; }
+html.cl-reading #workskin .chapter { margin-bottom: 60px; }
+html.cl-reading #workskin .chapter > .preface { border-top: 1px solid var(--cl-line); padding-top: 30px !important; }
+html.cl-reading #workskin .chapter .title { font-family: var(--cl-font, "SimSun", serif); font-size: 25px; line-height: 1.6; font-weight: normal; color: var(--cl-ink); }
+html.cl-reading #feedback { max-width: var(--cl-width, 700px); margin: 70px auto 0; color: var(--cl-ink); }
+html.cl-reading #feedback input, html.cl-reading #feedback textarea { max-width: 100%; }
+html.cl-reading.cl-hide-notes #workskin .notes { display: none !important; }
+@media (max-width: 650px) { html.cl-reading #main { padding: calc(100px + var(--cl-nav-height, 0px)) 22px 110px !important; } html.cl-reading #workskin > .preface > .title { font-size: 32px !important; } }
+@media print { #chapterlight-root { display: none !important; } html.cl-reading #main { padding: 0 !important; } }
+
+/* A column is a page: Chromium breaks at complete lines and preserves inline markup. */
+#cl-page-viewport { display: contents; }
+html.cl-reading.cl-paged, html.cl-reading.cl-paged body { overflow: hidden !important; }
+html.cl-reading.cl-paged .cl-page-background { display: none !important; }
+html.cl-reading.cl-paged #cl-page-viewport { display: block; position: fixed; top: calc(96px + var(--cl-nav-height, 0px)); bottom: 84px; left: 50%; width: min(var(--cl-width, 760px), calc(100vw - 80px)); transform: translateX(-50%); overflow: hidden; z-index: 10; }
+html.cl-reading.cl-paged #workskin { box-sizing: border-box; width: 100% !important; max-width: none !important; height: 100% !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; column-width: auto; column-count: 1; column-gap: 64px; column-fill: auto; transform: translateX(var(--cl-page-offset, 0px)); will-change: transform; }
+html.cl-reading.cl-paged #workskin p { orphans: 2; widows: 2; }
+html.cl-reading.cl-paged #workskin h2, html.cl-reading.cl-paged #workskin h3 { break-after: avoid; }
+html.cl-reading.cl-paged #workskin .userstuff img { max-height: calc(100vh - 200px - var(--cl-nav-height, 0px)); object-fit: contain; break-inside: avoid; }
+html.cl-reading.cl-paged #feedback { display: none; }
+/* Reserve a reading column beside the default-open shelf on desktop. */
+/* Native pages keep their own typography and header, with room for either shelf. */
+html.cl-browsing { --cl-library-width: min(330px, 40vw); }
+html.cl-browsing.cl-library-open { --cl-native-gutter: calc(36px + min(330px, 40vw)); }
+html.cl-browsing.cl-library-mini { --cl-native-gutter: 96px; }
+html.cl-browsing #main { box-sizing: border-box !important; margin-left: var(--cl-native-gutter) !important; width: auto !important; max-width: calc(100% - var(--cl-native-gutter)) !important; float: none !important; }
+@media print { html.cl-browsing #main { margin-left: 0 !important; max-width: none !important; } }
+html.cl-reading.cl-library-mini #main { padding-left: 112px !important; }
+html.cl-reading.cl-paged.cl-library-mini #cl-page-viewport { left: calc(50% + 42px); width: min(var(--cl-width, 760px), calc(100vw - 164px)); }
+@media (min-width: 900px) {
+  html.cl-reading.cl-library-open #main { padding-left: 388px !important; }
+  html.cl-reading.cl-paged.cl-library-open #cl-page-viewport { left: calc(50% + 180px); width: min(var(--cl-width, 760px), calc(100vw - 440px)); }
+}
+@media print { html.cl-reading.cl-paged, html.cl-reading.cl-paged body { overflow: visible !important; } html.cl-reading.cl-paged #cl-page-viewport { display: contents; } html.cl-reading.cl-paged #workskin { height: auto !important; columns: auto; transform: none; } html.cl-reading.cl-paged #feedback { display: block !important; } }
+
+/* Keep AO3 navigation in its original DOM so menus and search work normally. */
+/* Native dropdowns must paint above both sizes of the reading sidebar. */
+html.cl-browsing #header.cl-site-header { position: relative !important; z-index: 2147483645 !important; overflow: visible !important; }
+html.cl-reading #header.cl-site-header { display: flow-root !important; position: fixed !important; top: 70px !important; left: 0 !important; right: 0 !important; width: 100% !important; min-height: 0 !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; z-index: 2147483645 !important; }
+html.cl-reading #header .cl-site-header-extra { display: none !important; }
+html.cl-reading #header.cl-site-header .primary.navigation { margin-top: 0 !important; margin-bottom: 0 !important; }
+@media print { html.cl-reading #header.cl-site-header { display: none !important; } html.cl-reading.cl-library-open #main, html.cl-reading.cl-library-mini #main { padding-left: 0 !important; } }

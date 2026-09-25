@@ -1,0 +1,64 @@
+plugins { id 'com.android.application' }
+
+def version = new Properties()
+rootProject.file('version.properties').withInputStream { version.load(it) }
+def repository = providers.gradleProperty('releaseRepository').orElse('UNCONFIGURED').get()
+if (repository != 'UNCONFIGURED' && !(repository ==~ /[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/)) {
+    throw new GradleException('releaseRepository must be owner/repository')
+}
+
+android {
+    namespace 'io.github.chapterlight.reader'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'io.github.chapterlight.reader'
+        minSdk 26
+        targetSdk 36
+        versionCode version.getProperty('versionCode').toInteger()
+        versionName version.getProperty('versionName')
+        buildConfigField 'String', 'RELEASE_REPOSITORY', '"' + repository + '"'
+    }
+    buildFeatures { buildConfig true }
+    signingConfigs {
+        release {
+            if (System.getenv('CHAPTERLIGHT_KEYSTORE')) {
+                storeFile file(System.getenv('CHAPTERLIGHT_KEYSTORE'))
+                storePassword System.getenv('CHAPTERLIGHT_STORE_PASSWORD')
+                keyAlias System.getenv('CHAPTERLIGHT_KEY_ALIAS')
+                keyPassword System.getenv('CHAPTERLIGHT_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets.main.assets.srcDir layout.buildDirectory.dir('readerAssets')
+}
+
+tasks.register('syncReaderAssets', Sync) {
+    from('../../extension') { include '*.js', '*.css' }
+    into layout.buildDirectory.dir('readerAssets/reader')
+}
+tasks.named('preBuild').configure { dependsOn 'syncReaderAssets' }
+tasks.register('requireReleaseSigning') {
+    doLast {
+        if (!System.getenv('CHAPTERLIGHT_KEYSTORE')) throw new GradleException('Release signing secrets are required; see android/README.md')
+        if (repository == 'UNCONFIGURED') throw new GradleException('Set -PreleaseRepository=owner/repository')
+    }
+}
+tasks.configureEach {
+    if (name == 'assembleRelease' || name == 'bundleRelease') dependsOn 'requireReleaseSigning'
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.16.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20250517'
+}

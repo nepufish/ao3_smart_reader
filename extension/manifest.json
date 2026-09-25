@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "章灯 Chapterlight — AO3 中文阅读",
+  "version": "0.6.4",
+  "description": "为 AO3 中文小说打造的阅读模式：中文字体、段落排版、章节目录与本地阅读进度。",
+  "permissions": ["storage"],
+  "content_scripts": [{
+    "matches": [
+      "https://archiveofourown.org/*",
+      "https://www.archiveofourown.org/*",
+      "https://ao3.cn/*",
+      "https://www.ao3.cn/*",
+      "https://ao3-cn.com/*",
+      "https://www.ao3-cn.com/*"
+    ],
+    "js": ["pagination.js", "library.js", "reader.js"],
+    "css": ["reader.css"],
+    "run_at": "document_idle"
+  }]
+}

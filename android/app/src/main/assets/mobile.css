@@ -1,0 +1,12 @@
+/* Phone adaptation; desktop extension files remain the single reader source. */
+@media (max-width: 700px) {
+  html.cl-android.cl-reading.cl-paged #cl-page-viewport { bottom: 118px; }
+  html.cl-android.cl-reading.cl-paged.cl-library-mini #cl-page-viewport { left: calc(50% + 26px); width: calc(100vw - 92px); }
+  html.cl-android.cl-reading.cl-library-mini #main { padding-left: 72px !important; padding-right: 20px !important; }
+  html.cl-android.cl-browsing { --cl-library-width: min(280px, 40vw); }
+  html.cl-android.cl-browsing.cl-library-mini { --cl-native-gutter: 64px; }
+  html.cl-android.cl-browsing.cl-library-open { --cl-native-gutter: calc(24px + min(280px, 40vw)); }
+  html.cl-android.cl-reading #header.cl-site-header { font-size: 12px; }
+  html.cl-android.cl-reading #header .primary.navigation { flex-wrap: wrap; }
+  html.cl-android.cl-reading #header input[type=text] { max-width: 32vw; }
+}
