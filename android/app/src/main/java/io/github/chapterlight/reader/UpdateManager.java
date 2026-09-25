@@ -107,10 +107,10 @@ final class UpdateManager {
         if (pendingInstall == null) return;
         if (!activity.getPackageManager().canRequestPackageInstalls()) {
             new AlertDialog.Builder(activity).setTitle("允许安装更新")
-                    .setMessage("请在系统设置中允许章灯安装应用，然后返回继续安装。")
+                    .setMessage(activity.getString(R.string.allow_app_install, activity.getString(R.string.app_name)))
                     .setPositiveButton("打开设置", (dialog, which) -> {
                         try { activity.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + activity.getPackageName()))); }
-                        catch (android.content.ActivityNotFoundException e) { message("请在系统设置中允许章灯安装未知来源应用。"); }
+                        catch (android.content.ActivityNotFoundException e) { message(activity.getString(R.string.allow_unknown_sources, activity.getString(R.string.app_name))); }
                     }).setNegativeButton("取消", (dialog, which) -> pendingInstall = null).show();
             return;
         }

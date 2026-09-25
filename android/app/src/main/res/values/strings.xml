@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">星肆</string>
+    <string name="allow_app_install">请在系统设置中允许%1$s安装应用，然后返回继续安装。</string>
+    <string name="allow_unknown_sources">请在系统设置中允许%1$s安装未知来源应用。</string>
+</resources>

@@ -292,7 +292,7 @@ public final class MainActivity extends AppCompatActivity {
         }
     }
     private void showProfile() {
-        LinearLayout content=nativeContent(); content.addView(ui.text("留一盏灯，读一段故事。",26,true)); space(content,10); note(content,"章灯 · "+BuildConfig.VERSION_NAME); space(content,28);
+        LinearLayout content=nativeContent(); content.addView(ui.text("留一盏灯，读一段故事。",26,true)); space(content,10); note(content,getString(R.string.app_name)+" · "+BuildConfig.VERSION_NAME); space(content,28);
         addRow(content,"切换站点",siteName(),this::showSites);
         addRow(content,"AO3 账号","在当前站点登录",()->navigate(site()+"/users/login"));
         addRow(content,"浏览分类","Fandoms 与标签",()->navigate(site()+"/media"));

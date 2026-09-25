@@ -1,3 +1,9 @@
+# Android 0.8.2 rename validation
+
+The Android launcher label, profile branding and installation prompts now use 星肆, through one `app_name` resource. `testDebugUnitTest`, `lintDebug` and the signed release build pass; lint reports no issues. `aapt dump badging` confirms the packaged application label is 星肆, version 0.8.2 / code 802, with the original package ID. This is a branding-only change; no new physical-device test was performed. Existing signing identity, data keys and updater asset filenames are retained.
+
+The detailed UI validation below applies to the unchanged 0.8.1 reading implementation.
+
 # Android 0.8.1 validation
 
 Built with JDK 17, Gradle 8.13, Android Gradle Plugin 8.13.2, Android SDK 36 and build-tools 35.0.0.

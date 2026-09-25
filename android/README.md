@@ -1,4 +1,6 @@
-# Chapterlight for Android
+# 星肆 for Android
+
+Formerly 章灯 / Chapterlight. The launcher label, profile and installation prompts now use **星肆**. The package ID, signing key and `Chapterlight.apk` update asset name are retained so upgrades preserve existing data.
 
 Android 8.0+ app with native navigation, library screens and Material bottom sheets. The app opens **`/works`** on the selected AO3 site. A compact site picker switches between AO3 and `www.ao3-cn.com`; there is no address bar or desktop sidebar.
 
@@ -35,7 +37,7 @@ Versions through 0.8.0 point to the previous repository. Install the new signed 
 For a new release:
 
 1. Increment both values in `android/version.properties`.
-2. Push the commit and tag `android-vVERSION` (for example `android-v0.8.1`).
+2. Push the commit and tag `android-vVERSION` (for example `android-v0.8.2`).
 3. GitHub Actions runs reader tests, Android unit tests, lint and builds; then signs and publishes the release APK, `update.json` and `SHA256SUMS`.
 4. Users check for updates from 我的.
 
@@ -55,9 +57,9 @@ Local release builds use `CHAPTERLIGHT_KEYSTORE` (absolute file path), `CHAPTERL
 If GitHub Actions is disabled for the repository owner, build with `python tools/build-android-local.py --release`. This uses the environment above, or this workstation's private configuration in `~/.chapterlight/`. It runs checks and writes the signed APK and update metadata to `artifacts/android/`. Commit and push the version change, then publish:
 
 ```sh
-git tag android-v0.8.1
-git push origin android-v0.8.1
-gh release create android-v0.8.1 artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "Chapterlight 0.8.1 · Android" --notes-file artifacts/android/release-notes.md --latest
+git tag android-v0.8.2
+git push origin android-v0.8.2
+gh release create android-v0.8.2 artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "星肆 0.8.2 · Android" --notes-file artifacts/android/release-notes.md --latest
 ```
 
 Use the new version in each command for subsequent releases. The in-app updater works with these manually published releases as well as Actions-generated releases.

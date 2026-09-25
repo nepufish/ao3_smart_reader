@@ -86,4 +86,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "Chapterlight ${GITHUB_REF_NAME#android-v} · Android" --notes-file artifacts/android/release-notes.md --latest
+          gh release create "$GITHUB_REF_NAME" artifacts/android/Chapterlight.apk artifacts/android/update.json artifacts/android/SHA256SUMS --verify-tag --title "星肆 ${GITHUB_REF_NAME#android-v} · Android" --notes-file artifacts/android/release-notes.md --latest

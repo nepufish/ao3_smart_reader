@@ -2,9 +2,9 @@
 
 A dependency-free Chrome / Edge extension focused on reading Chinese novels on AO3, with a Simplified Chinese interface.
 
-## Android app
+## 星肆 · Android app
 
-Version 0.8.1 adds fullscreen reading, tap-to-reveal glass controls and a compact search header: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
+Version 0.8.2 renames the Android app to **星肆**. It includes fullscreen reading, tap-to-reveal glass controls and a compact search header: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
 
 Download **Chapterlight.apk** from [GitHub Releases](https://github.com/nepufish/ao3_smart_reader/releases/latest). Android 8.0+ with a current Android System WebView is required. See [Android build/release instructions](android/README.md), [design notes](ANDROID-DESIGN.md), and [validation coverage](ANDROID-TEST.md).
 
