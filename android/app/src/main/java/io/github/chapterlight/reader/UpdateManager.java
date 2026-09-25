@@ -171,6 +171,13 @@ final class UpdateManager {
     private void ui(Runnable action) { activity.runOnUiThread(() -> { if (!closed && !activity.isFinishing() && !activity.isDestroyed()) action.run(); }); }
     private void finishProgress() { if (progress != null) { progress.dismiss(); progress = null; } busy = false; }
     private void message(String message) { Toast.makeText(activity, message, Toast.LENGTH_LONG).show(); }
-    private void fail(String message) { ui(() -> { finishProgress(); new AlertDialog.Builder(activity).setTitle("更新").setMessage(message).setPositiveButton("确定", null).show(); }); }
+    private void fail(String message) {
+        ui(() -> {
+            finishProgress();
+            new AlertDialog.Builder(activity).setTitle("更新").setMessage(message + "\n\n也可以在浏览器中查看发布页；若需要，请先登录 GitHub，再下载安装包。")
+                    .setPositiveButton("打开发布页", (dialog, which) -> activity.openExternal("https://github.com/" + BuildConfig.RELEASE_REPOSITORY + "/releases/latest"))
+                    .setNegativeButton("关闭", null).show();
+        });
+    }
     void close() { closed = true; worker.shutdownNow(); finishProgress(); }
 }

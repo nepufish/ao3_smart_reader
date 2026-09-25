@@ -21,6 +21,8 @@ Repository: https://github.com/cczzaa101/ao3_friendly_reader
 
 The native **⋮ → 检查更新** menu reads the latest public GitHub Release and its `update.json`. It compares numeric `versionCode`, offers the new version, downloads `Chapterlight.apk`, checks SHA-256, package ID, version and signing certificate, then invokes Android's system installer. The user approves the installation. No silent installs or GitHub credentials are used. A failed check/download shows an error without touching reader data.
 
+If a release cannot be accessed anonymously, the error dialog offers **打开发布页**. Sign in to GitHub in that external browser if necessary, download the signed APK, and install it over the existing app. The direct in-app check requires public API/asset access and cannot work while GitHub returns anonymous 404 responses. The app never embeds a personal GitHub token.
+
 For a new release:
 
 1. Increment both values in `android/version.properties`.
