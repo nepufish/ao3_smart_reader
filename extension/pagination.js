@@ -158,7 +158,7 @@
       else window.scrollTo({ top: Math.max(0, scrollY + rect.top - this.readingTop()), behavior: 'instant' });
       return true;
     }
-    readingTop() { return 100 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cl-nav-height')) || 0); }
+    readingTop() { return document.documentElement.classList.contains('cl-android') ? 24 : 100 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cl-nav-height')) || 0); }
     reveal(element) {
       if (!this.enabled || !this.content.contains(element)) return;
       this.stop();

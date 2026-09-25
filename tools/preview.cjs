@@ -4,7 +4,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
-  let file = url.pathname === '/' || url.pathname === '/works/search' ? '/demo/browse.html' : /^\/works\/\d+(\/chapters\/\d+)?\/?$/.test(url.pathname) ? '/demo/index.html' : url.pathname;
+  let file = ['/', '/works', '/works/search'].includes(url.pathname) ? '/demo/browse.html' : /^\/works\/\d+(\/chapters\/\d+)?\/?$/.test(url.pathname) ? '/demo/index.html' : url.pathname;
   file = path.resolve(root, '.' + file);
   if (!file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
   fs.readFile(file, (error, data) => {

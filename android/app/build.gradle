@@ -14,6 +14,7 @@ android {
         applicationId 'io.github.chapterlight.reader'
         minSdk 26
         targetSdk 36
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         versionCode version.getProperty('versionCode').toInteger()
         versionName version.getProperty('versionName')
         buildConfigField 'String', 'RELEASE_REPOSITORY', '"' + repository + '"'
@@ -59,6 +60,10 @@ tasks.configureEach {
 
 dependencies {
     implementation 'androidx.core:core:1.16.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20250517'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
 }

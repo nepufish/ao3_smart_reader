@@ -19,8 +19,10 @@
     }
   }
   let navHeight = 0;
-  const readingTop = () => 100 + navHeight;
+  const mobile = document.documentElement.classList.contains('cl-android');
+  const readingTop = () => mobile ? 24 : 100 + navHeight;
   const defaults = { enabled: true, mode: 'paged', animation: true, libraryOpen: true, theme: 'paper', font: 'serif', customFont: '', weight: 400, tracking: 0, size: 22, width: 760, leading: 2, gap: 0.8, indent: false, speed: 500, notes: true, resume: true };
+  if (mobile) Object.assign(defaults, { libraryOpen: false, size: 20, leading: 1.8, width: 640 });
   const fonts = {
     serif: '"Songti SC", "SimSun", "PMingLiU", "Noto Serif CJK SC", "Source Han Serif SC", serif',
     book: '"KaiTi", "STKaiti", "Kaiti SC", "BiauKai", serif',
@@ -126,7 +128,7 @@
     if (ready && interacted && !pager.animation) { clearTimeout(saveTimer); saveTimer = setTimeout(save, 500); }
   }) : null;
   function measureNavigation() {
-    const height = settings.enabled && isWork && siteNav ? Math.ceil(siteHeader.getBoundingClientRect().height) : 0;
+    const height = !mobile && settings.enabled && isWork && siteNav ? Math.ceil(siteHeader.getBoundingClientRect().height) : 0;
     const libraryTop = settings.enabled && isWork ? 84 + height : Math.max(84, Math.ceil(siteHeader?.getBoundingClientRect().bottom || 70) + 14);
     document.documentElement.style.setProperty('--cl-library-top', `${libraryTop}px`);
     if (height === navHeight) return;
@@ -522,6 +524,7 @@
       if ([300, 400, 500, 600, 700].includes(input.weight)) settings.weight = input.weight;
       for (const [id, min, max] of [['size', 16, 30], ['width', 480, 960], ['leading', 1.4, 2.4], ['gap', 0, 2], ['speed', 200, 1000], ['tracking', 0, .15]]) if (Number.isFinite(input[id])) settings[id] = Math.max(min, Math.min(max, input[id]));
     } catch { storageError(); }
+    if (mobile) settings.libraryOpen = false;
     apply();
     if (!settings.enabled) { ready = true; return; }
     if (!isWork) { if (settings.libraryOpen) await refreshLibrary(); ready = true; return; }

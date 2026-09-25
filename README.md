@@ -4,7 +4,14 @@ A dependency-free Chrome / Edge extension focused on reading Chinese novels on A
 
 ## Android app
 
-The Android app packages this reader in a native WebView with phone controls, swipe paging, and signed updates via **⋮ → 检查更新**. Download **Chapterlight.apk** from [GitHub Releases](https://github.com/cczzaa101/ao3_friendly_reader/releases/latest). Android 8.0+ with an up-to-date Android System WebView is required. App data is separate from the desktop extension and stored per website origin. See [Android build and release instructions](android/README.md).
+Version 0.8.0 is redesigned for phones: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
+
+Download **Chapterlight.apk** from [GitHub Releases](https://github.com/cczzaa101/ao3_friendly_reader/releases/latest). Android 8.0+ with a current Android System WebView is required. See [Android build/release instructions](android/README.md), [design notes](ANDROID-DESIGN.md), and [validation coverage](ANDROID-TEST.md).
+
+<p><img src="docs/android/discover.png" width="240" alt="Native Android discovery screen with original test stories"> <img src="docs/android/reader.png" width="240" alt="Chinese reading with native bottom controls"> <img src="docs/android/library.png" width="240" alt="Native reading history and bookmarks"></p>
+
+Screenshots use original test stories on an Android 15 emulator. The desktop extension is described below.
+
 
 Allowed HTTPS domains: `archiveofourown.org`, `www.archiveofourown.org`, `ao3-cn.com`, `www.ao3-cn.com`, `ao3.cn`, and `www.ao3.cn`. The mirror domains use the same AO3 page selectors. Version 0.4.3 of the installed extension was tested on a Chinese work at `www.ao3-cn.com` on 2026-09-25: paging, mode switching, automatic resume, bookmarks, history, font changes, and exit/re-entry passed. Other works and skins may differ. `ao3.cn` is a different site from `ao3-cn.com`; its inspected pages contain informational articles rather than AO3 work markup. Navigation and saved-position links stay on their originating domain.
 

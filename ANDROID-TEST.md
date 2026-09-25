@@ -1,17 +1,28 @@
-# Android 0.7.1 validation
+# Android 0.8.0 validation
 
-Built on Windows with JDK 17, Gradle 8.13, Android Gradle Plugin 8.13.2, Android SDK 36 and build-tools 35.0.0.
+Built with JDK 17, Gradle 8.13, Android Gradle Plugin 8.13.2, Android SDK 36 and build-tools 35.0.0.
 
-- 34 Node tests pass, including Android storage defaults, preservation of saved choices and gesture filtering.
-- 4 Android JUnit tests pass: exact HTTPS origin checks, release parsing, rejection of foreign download origins, invalid checksums and mismatched/pre-release tags.
-- `testDebugUnitTest`, `lintDebug` and `assembleRelease` complete successfully.
-- The APK has package ID `io.github.chapterlight.reader`, version `0.7.1` / code `701`, minimum Android API 26 and target API 36.
-- APK signature verified with Android `apksigner`. Release certificate SHA-256: `a88210efe5ab7111ba17da86dd81de87f7f0e85a2e05a383e9fbb391363e9cea`.
-- All seven packaged reader/mobile asset files match workspace source byte-for-byte.
-- Local Chrome's 390px preview was visually checked for paging, full/mini sidebar controls, native navigation and the reader switch. This checks responsive web layout, not Android WebView behavior.
+## Automated checks
 
-No Android device was connected, so installation, device WebView behavior, and the system update-install permission flow have not been verified on a phone. Version 0.7.0 is the first release; 0.7.1 adds a browser fallback for inaccessible releases. Both are signed with the same key. The updater's release manifest, package identity, SHA-256 and certificate checks are implemented; release assets are independently verified after publication.
+- 36 Node tests pass, covering the shared desktop reader, Android storage, swipe filtering, native settings adapter and safe library snapshots.
+- 4 Android JUnit tests pass for exact HTTPS origins and GitHub release metadata/asset validation.
+- `testDebugUnitTest`, `lintDebug` and `assembleRelease` pass. Android lint reports **no issues**.
+- Package: `io.github.chapterlight.reader`; version `0.8.0` / code `800`; minimum API 26, target API 36.
+- `apksigner verify` passes. Release certificate SHA-256: `a88210efe5ab7111ba17da86dd81de87f7f0e85a2e05a383e9fbb391363e9cea` (unchanged from 0.7.1).
+- APK reader/mobile assets match workspace source byte-for-byte. APK SHA-256 matches `update.json`.
 
-GitHub reports `Actions has been disabled for this user` for repository owner `cczzaa101`. The workflow is committed, signing secrets are configured, and a local build/publish fallback is documented in `android/README.md`. The first APK is built locally and uploaded directly to GitHub Releases. In-app updates do not depend on Actions being enabled.
+## Android emulator
 
-Authenticated GitHub API calls confirm the repository is public and the release/assets exist. Anonymous repository, latest-release API and APK/metadata download requests currently return 404 from the test network, including requests bypassing caches. This prevents direct in-app update checks until public access is available. The app offers an external-browser fallback that permits signing into GitHub. No automatic download/install success is claimed under this restriction.
+A dedicated Android 15 / API 35 Pixel 6 emulator was used, with Chromium WebView and the app's real native views. `MobileFlowTest` passes at the default 411dp width / normal text and at 360dp width / 150% system text. Its original Chinese fixtures avoid relying on account state or network access.
+
+The flow checks `/works` at launch, work-list width, hidden desktop UI, keyboard-aware native search, original-site switch off/on, paging, bookmark persistence, scroll/paged switching, night mode, native history/bookmarks and rotation. Screenshots of the list, reader, typography, search keyboard and library were visually inspected. The test exposed a stale reading-switch state; the page menu now reads current state before constructing its switch.
+
+The previous published signed 0.7.1 APK installs on the emulator, and the signed 0.8.0 APK installs over it with `adb install -r`. Android accepts the signing identity and version upgrade. This is an installation compatibility test; it does not claim the complete in-app download/unknown-sources permission flow was exercised.
+
+No physical phone was tested. Live-site login, network challenges, arbitrary work skins, and external browser installation prompts still require device testing. The emulator encountered AO3's network challenge during a live request; fixture results do not establish live-site access.
+
+## GitHub availability
+
+GitHub previously reported `Actions has been disabled for this user` for owner `cczzaa101`; the committed workflow and signing secrets have a documented local build/publish fallback.
+
+Authenticated GitHub access can retrieve the public repository and release assets. The anonymous latest-release API still returns 404 on this test network. Direct in-app update checks need that access restored; the app offers **打开发布页** to use a signed-in external browser. No automatic download/install success is claimed while this restriction remains.

@@ -1,12 +1,70 @@
-/* Phone adaptation; desktop extension files remain the single reader source. */
-@media (max-width: 700px) {
-  html.cl-android.cl-reading.cl-paged #cl-page-viewport { bottom: 118px; }
-  html.cl-android.cl-reading.cl-paged.cl-library-mini #cl-page-viewport { left: calc(50% + 26px); width: calc(100vw - 92px); }
-  html.cl-android.cl-reading.cl-library-mini #main { padding-left: 72px !important; padding-right: 20px !important; }
-  html.cl-android.cl-browsing { --cl-library-width: min(280px, 40vw); }
-  html.cl-android.cl-browsing.cl-library-mini { --cl-native-gutter: 64px; }
-  html.cl-android.cl-browsing.cl-library-open { --cl-native-gutter: calc(24px + min(280px, 40vw)); }
-  html.cl-android.cl-reading #header.cl-site-header { font-size: 12px; }
-  html.cl-android.cl-reading #header .primary.navigation { flex-wrap: wrap; }
-  html.cl-android.cl-reading #header input[type=text] { max-width: 32vw; }
+/* Native Android owns navigation and controls; WebView only renders content. */
+html.cl-android #chapterlight-root { display:none !important; }
+html.cl-android.cl-reading { scroll-padding-top:24px; }
+html.cl-android.cl-reading #main,
+html.cl-android.cl-reading.cl-library-open #main,
+html.cl-android.cl-reading.cl-library-mini #main { padding:24px 22px 40px !important; }
+html.cl-android.cl-reading #workskin { max-width:640px !important; }
+html.cl-android.cl-reading.cl-paged #cl-page-viewport,
+html.cl-android.cl-reading.cl-paged.cl-library-open #cl-page-viewport,
+html.cl-android.cl-reading.cl-paged.cl-library-mini #cl-page-viewport {
+  top:24px; bottom:24px; left:50%; width:min(640px,calc(100vw - 44px));
 }
+html.cl-android.cl-reading #header { display:none !important; }
+html.cl-android.cl-reading #workskin > .preface > .title { font-size:28px !important; margin:0 0 12px !important; letter-spacing:.04em; }
+html.cl-android.cl-reading #workskin .byline { margin-bottom:24px; }
+html.cl-android.cl-reading #workskin .preface { margin-bottom:24px !important; }
+html.cl-android.cl-reading #workskin .summary,
+html.cl-android.cl-reading #workskin .notes { padding-left:14px; margin:18px 0; }
+html.cl-android.cl-reading #workskin .chapter > .preface { padding-top:20px !important; }
+html.cl-android.cl-reading #workskin .chapter .title { font-size:23px; }
+/* Browsing is still the original document: links, filters, login and gates work. */
+html.cl-android.cl-browsing { background:#f6f8f5; color:#1d302d; --cl-native-gutter:0px; }
+html.cl-android.cl-browsing body,
+html.cl-android.cl-browsing #outer,
+html.cl-android.cl-browsing #inner { background:#f6f8f5 !important; margin:0 !important; padding:0 !important; font:16px/1.65 system-ui,sans-serif; }
+html.cl-android.cl-browsing #header,
+html.cl-android.cl-browsing #footer,
+html.cl-android.cl-browsing .landmark { display:none !important; }
+html.cl-android.cl-browsing #main { float:none !important; box-sizing:border-box; width:100% !important; max-width:760px !important; margin:0 auto !important; padding:20px 16px 32px !important; }
+html.cl-android.cl-browsing #main h2.heading,
+html.cl-android.cl-browsing #main > h1 { font:600 24px/1.4 system-ui,sans-serif; margin:0 0 18px; color:#1d302d; }
+html.cl-android.cl-browsing a { color:#216755; text-decoration:none; overflow-wrap:anywhere; }
+html.cl-android.cl-browsing a:focus-visible { outline:2px solid #216755; outline-offset:3px; }
+html.cl-android.cl-browsing .index { padding:0; }
+html.cl-android.cl-browsing .work.blurb,
+html.cl-android.cl-browsing .work-list > .work,
+html.cl-android.cl-browsing .listbox { background:#fff !important; color:#1d302d; border:1px solid #e3e6db !important; border-radius:20px; box-shadow:none !important; padding:18px !important; margin:0 0 16px !important; box-sizing:border-box; width:100% !important; }
+html.cl-android.cl-browsing .blurb .header { min-height:0; }
+html.cl-android.cl-browsing .blurb .header .heading { margin:0 0 8px 0 !important; font:600 19px/1.5 system-ui,sans-serif; }
+html.cl-android.cl-browsing .blurb .header .fandoms { margin:8px 0; font-size:13px; }
+html.cl-android.cl-browsing .blurb .datetime { position:static; margin:8px 0; font-size:12px; color:#556a65; }
+html.cl-android.cl-browsing .blurb .required-tags { position:static; display:flex; gap:6px; margin:0 0 10px; padding:0; }
+html.cl-android.cl-browsing .blurb .required-tags li { position:static; display:inline-block; }
+html.cl-android.cl-browsing .blurb ul.tags { margin:12px 0; padding:0; font-size:12px; line-height:2; }
+html.cl-android.cl-browsing .blurb ul.tags a { border:0; background:#f1f3ec; border-radius:6px; padding:3px 5px; }
+html.cl-android.cl-browsing .blurb .summary { font:15px/1.8 system-ui,sans-serif; margin:12px 0; padding:0; }
+html.cl-android.cl-browsing .blurb dl.stats { float:none; display:flex; flex-wrap:wrap; gap:4px 8px; font-size:12px; color:#556a65; margin:14px 0 0; }
+html.cl-android.cl-browsing .blurb dl.stats dt,html.cl-android.cl-browsing .blurb dl.stats dd { float:none; margin:0; }
+html.cl-android.cl-browsing .listbox > .heading,html.cl-android.cl-browsing .listbox .index { background:transparent !important; box-shadow:none !important; }
+html.cl-android.cl-browsing .listbox li { padding:8px 0; }
+html.cl-android.cl-browsing .actions { display:flex; flex-wrap:wrap; gap:8px; }
+html.cl-android.cl-browsing .actions a,html.cl-android.cl-browsing button,html.cl-android.cl-browsing input[type=submit] { background:#e7ecdf; color:#34462f; box-shadow:none; border:0; border-radius:12px; padding:10px 14px; font:15px/1.6 system-ui; min-height:44px; box-sizing:border-box; }
+html.cl-android.cl-browsing input[type=text],html.cl-android.cl-browsing input[type=search],html.cl-android.cl-browsing input[type=password],html.cl-android.cl-browsing select { max-width:100%; font-size:16px; min-height:44px; box-sizing:border-box; border:1px solid #c7cfc1; border-radius:10px; padding:8px; }
+html.cl-android.cl-browsing form.filters { float:none !important; width:auto !important; margin:16px 0; }
+html.cl-android.cl-browsing #main.filtered .index { width:100% !important; float:none !important; }
+html.cl-android.cl-browsing details.cl-mobile-filters { margin:16px 0; border:1px solid #d8ddd2; border-radius:16px; padding:12px 16px; }
+html.cl-android.cl-browsing details.cl-mobile-filters > summary { cursor:pointer; min-height:32px; font:600 16px/2 system-ui; color:#216755; }
+
+html.cl-android.cl-browsing .work-list { list-style:none; margin:0; padding:0; }
+html.cl-android.cl-browsing .work .heading a:first-child { color:#1d302d; }
+html.cl-android.cl-browsing .work .heading a[rel=author] { color:#216755; font-size:14px; font-weight:400; }
+html.cl-android.cl-browsing .blurb .tags { overflow-wrap:anywhere; }
+html.cl-android.cl-browsing fieldset, html.cl-android.cl-browsing dl { min-width:0; }
+html.cl-android.cl-browsing fieldset { border:0; padding:12px 0; box-shadow:none; }
+html.cl-android.cl-browsing form dt, html.cl-android.cl-browsing form dd { float:none; width:auto; margin:8px 0; }
+html.cl-android.cl-reading.cl-paged #workskin .userstuff img { max-height:calc(100vh - 48px); }
+
+html.cl-android.cl-browsing ol.work.index,html.cl-android.cl-browsing .blurb ul.tags { list-style:none; }
+html.cl-android.cl-browsing .blurb .fandoms { font-weight:400; }
+html.cl-android.cl-browsing .blurb .required-tags { font-size:12px; line-height:1.5; }

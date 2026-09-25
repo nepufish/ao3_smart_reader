@@ -6,7 +6,7 @@ const chrome = { storage: { local: {
     return Object.fromEntries(requested.map(key => {
       const raw = localStorage.getItem(prefix + key);
       const value = raw === null ? undefined : JSON.parse(raw);
-      return [key, key === 'settings' ? { libraryOpen: false, size: 20, width: 600, ...value } : value];
+      return [key, key === 'settings' ? { libraryOpen: false, size: 20, leading: 1.8, width: 640, ...value } : value];
     }));
   },
   async set(values) {
