@@ -38,6 +38,31 @@ html.cl-reading.cl-paged #workskin p { orphans: 2; widows: 2; }
 html.cl-reading.cl-paged #workskin h2, html.cl-reading.cl-paged #workskin h3 { break-after: avoid; }
 html.cl-reading.cl-paged #workskin .userstuff img { max-height: calc(100vh - 200px - var(--cl-nav-height, 0px)); object-fit: contain; break-inside: avoid; }
 html.cl-reading.cl-paged #feedback { display: none; }
+
+/* AO3's original feedback DOM lives here temporarily, keeping forms and handlers. */
+#cl-site-panel { box-sizing:border-box; width:min(850px,calc(100vw - 40px)); max-height:calc(100dvh - 40px); margin:auto; padding:0; border:1px solid var(--cl-line,#dedfd4); border-radius:20px; background:var(--cl-paper,#f6f3ec); color:var(--cl-ink,#343832); box-shadow:0 22px 70px #0003; font:15px/1.7 system-ui,sans-serif; }
+#cl-site-panel[open] { display:flex!important; flex-direction:column; }
+#cl-site-panel::backdrop { background:#13201980; backdrop-filter:blur(8px); }
+#cl-site-panel .cl-site-panel-head { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; padding:12px 20px; border-bottom:1px solid var(--cl-line,#dedfd4); }
+#cl-site-panel .cl-site-panel-head h2 { margin:0; font:600 19px/1.5 system-ui,sans-serif; }
+#cl-site-panel-close { min-height:44px; border:1px solid var(--cl-line,#dedfd4); border-radius:22px; padding:8px 16px; font:14px system-ui,sans-serif; color:inherit; background:transparent; cursor:pointer; }
+#cl-site-panel .cl-site-panel-content { min-height:0; overflow:auto; overscroll-behavior:contain; padding:20px; }
+#cl-site-panel #feedback { display:block!important; max-width:none; width:auto; margin:0!important; }
+#cl-site-panel #feedback .userstuff { font:16px/1.8 system-ui,sans-serif; overflow-wrap:anywhere; }
+#cl-site-panel #feedback input,#cl-site-panel #feedback textarea,#cl-site-panel #feedback select { box-sizing:border-box; max-width:100%; font-size:16px; }
+#cl-site-panel #feedback textarea { width:100%; min-height:130px; }
+#cl-site-panel #feedback textarea,#cl-site-panel #feedback input[type=text],#cl-site-panel #feedback input[type=email] { color:var(--cl-ink); background:var(--cl-paper); border:1px solid var(--cl-line); border-radius:10px; padding:10px 12px; }
+#cl-site-panel #feedback button,#cl-site-panel #feedback input[type=submit] { color:var(--cl-ink); background:var(--cl-paper); border:1px solid var(--cl-line); border-radius:20px; min-height:44px; padding:8px 18px; cursor:pointer; }
+#cl-site-panel :focus-visible { outline:2px solid #62836c; outline-offset:2px; }
+#cl-site-panel #feedback fieldset { min-width:0; }
+#cl-site-panel #feedback .actions { display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+#cl-site-panel #feedback .actions a,#cl-site-panel #feedback input[type=submit] { display:inline-block; padding:8px 12px; min-height:28px; }
+#cl-site-panel .cl-download-formats { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+#cl-site-panel .cl-download-formats a { display:flex; align-items:center; min-height:48px; padding:0 24px; border:1px solid var(--cl-line,#dedfd4); border-radius:24px; color:inherit; font-weight:600; text-decoration:none; }
+html.cl-site-panel-open { overflow:hidden!important; }
+html.cl-android #cl-site-panel { width:calc(100vw - 16px); max-height:calc(100dvh - 16px); border-radius:24px; }
+html.cl-android #cl-site-panel .cl-site-panel-content { padding:16px; }
+html.cl-android #cl-site-panel #feedback .thread { margin-left:0; padding-left:12px; }
 /* Reserve a reading column beside the default-open shelf on desktop. */
 /* Native pages keep their own typography and header, with room for either shelf. */
 html.cl-browsing { --cl-library-width: min(330px, 40vw); }

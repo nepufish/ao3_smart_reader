@@ -132,7 +132,7 @@ public final class MainActivity extends AppCompatActivity {
                 if (request.isForMainFrame()) showError("暂时无法连接。可点击顶部站点切换，或在菜单中重试。");
             }
         });
-        web.setDownloadListener((url,agent,disposition,type,length) -> { if (UrlPolicy.isWebUrl(url)) openExternal(url); });
+        web.setDownloadListener(this::downloadWork);
         body.addView(web,new FrameLayout.LayoutParams(-1,-1));
         dock = ui.column(); dock.setPadding(ui.dp(18),ui.dp(8),ui.dp(18),ui.dp(12)); FrameLayout.LayoutParams bottom=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM); root.addView(dock,bottom);
         quietPageStatus=ui.text("",11,false); quietPageStatus.setGravity(Gravity.CENTER); quietPageStatus.setVisibility(View.GONE);
@@ -169,7 +169,7 @@ public final class MainActivity extends AppCompatActivity {
         });
     }
     private void renderChrome() {
-        String signature = section + reading() + reader.optBoolean("enabled") + reader.optString("title") + reader.optString("theme") + siteName();
+        String signature = section + reading() + reader.optBoolean("enabled") + reader.optString("title") + reader.optString("theme") + reader.optString("panel") + siteName();
         if (signature.equals(lastChrome)) { updatePageStatus(); return; }
         lastChrome = signature;
         if(reading() && !wasReading) controlsVisible=((android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled();
@@ -187,6 +187,8 @@ public final class MainActivity extends AppCompatActivity {
             TextView title = ui.text(reader.optString("title","正在阅读"),16,true);
             title.setSingleLine(true); title.setEllipsize(TextUtils.TruncateAt.END);
             header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+            header.addView(ui.iconButton("评论", "comments", () -> action("comments")));
+            header.addView(ui.iconButton("下载作品", "download", () -> action("downloads")));
             header.addView(ui.iconButton("更多操作", "more", this::showMenu));
             LinearLayout pages = ui.row();
             previousPage = ui.iconButton("上一页或上一章", "back", () -> turnPage(false));
@@ -377,14 +379,31 @@ public final class MainActivity extends AppCompatActivity {
     private void toast(String message) { Toast.makeText(this,message,Toast.LENGTH_SHORT).show(); }
     private void showError(String message) { error.setText(message); error.setVisibility(View.VISIBLE); }
     void openExternal(String url) { if(!UrlPolicy.isWebUrl(url)) return; try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(android.content.ActivityNotFoundException e){toast("没有可打开链接的浏览器");} }
+    private void downloadWork(String url,String agent,String disposition,String type,long length) {
+        if(!UrlPolicy.isReaderUrl(url) || android.os.Build.VERSION.SDK_INT<29) {openExternal(url);return;}
+        try {
+            String name=android.webkit.URLUtil.guessFileName(url,disposition,type).replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]","_");
+            if(name.length()>160) name=name.substring(name.length()-160);
+            android.app.DownloadManager.Request request=new android.app.DownloadManager.Request(Uri.parse(url));
+            request.setTitle(name).setDescription("AO3 作品下载").setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS,System.currentTimeMillis()+"-"+name);
+            if(type!=null&&!type.isEmpty()) request.setMimeType(type);
+            if(agent!=null&&!agent.isEmpty()) request.addRequestHeader("User-Agent",agent);
+            String cookies=CookieManager.getInstance().getCookie(url);
+            if(cookies!=null&&!cookies.isEmpty()) request.addRequestHeader("Cookie",cookies);
+            ((android.app.DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);
+            toast("已交给系统下载，可在通知或下载文件夹查看。");
+        } catch(RuntimeException e) {toast("无法开始下载，请重试或在浏览器中打开。");}
+    }
     private void refreshGlass() {
         header.invalidate(); for(int i=0;i<dock.getChildCount();i++) dock.getChildAt(i).invalidate();
     }
     private void applyImmersion() {
         boolean active=reading();
-        header.setVisibility(active&&!controlsVisible?View.GONE:View.VISIBLE);
-        dock.setVisibility(active&&!controlsVisible?View.GONE:View.VISIBLE);
-        quietPageStatus.setVisibility(active&&!controlsVisible?View.VISIBLE:View.GONE);
+        boolean panel=!reader.optString("panel").isEmpty();
+        header.setVisibility(panel||active&&!controlsVisible?View.GONE:View.VISIBLE);
+        dock.setVisibility(panel||active&&!controlsVisible?View.GONE:View.VISIBLE);
+        quietPageStatus.setVisibility(active&&!controlsVisible&&!panel?View.VISIBLE:View.GONE);
         if(active) progress.setVisibility(View.GONE);
         androidx.core.view.WindowInsetsControllerCompat bars=WindowCompat.getInsetsController(getWindow(),root);
         bars.setSystemBarsBehavior(androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
@@ -410,6 +429,7 @@ public final class MainActivity extends AppCompatActivity {
         });
     }
     private void goBack() {
+        if(!reader.optString("panel").isEmpty()) {action("closePanel");return;}
         if(reading() && controlsVisible && (sheet==null || !sheet.isShowing())) {controlsVisible=false;applyImmersion();return;}
         backToPage();
     }

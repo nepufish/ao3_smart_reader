@@ -105,6 +105,69 @@
   `;
   document.body.prepend(host);
   const $ = selector => ui.querySelector(selector);
+  $('.tools').insertAdjacentHTML('beforeend', '<button id="comments-button" aria-haspopup="dialog">评论</button><button id="downloads-button" aria-haspopup="dialog">下载</button>');
+  // Keep AO3's forms, CSRF tokens and event handlers intact. Only move the original
+  // feedback node while its modal is open; never copy or submit a comment ourselves.
+  const sitePanel = document.createElement('dialog');
+  sitePanel.id = 'cl-site-panel';
+  sitePanel.setAttribute('aria-labelledby', 'cl-site-panel-title');
+  sitePanel.innerHTML = '<header class="cl-site-panel-head"><h2 id="cl-site-panel-title"></h2><button type="button" id="cl-site-panel-close" aria-label="关闭并返回阅读">返回阅读 ×</button></header><div class="cl-site-panel-content"></div>';
+  document.body.append(sitePanel);
+  const panelContent = sitePanel.querySelector('.cl-site-panel-content');
+  let feedbackHome = null, movedFeedback = null, panelScroll = 0, panelTrigger = null;
+  function closeSitePanel() {
+    if (!sitePanel.open) return;
+    if (movedFeedback && feedbackHome?.isConnected) { feedbackHome.replaceWith(movedFeedback); }
+    movedFeedback = feedbackHome = null;
+    if (sitePanel.close) sitePanel.close(); else sitePanel.removeAttribute('open');
+    delete host.dataset.sitePanel;
+    document.documentElement.classList.remove('cl-site-panel-open');
+    window.scrollTo({ top: panelScroll, behavior: 'instant' });
+    panelTrigger?.focus({ preventScroll: true });
+  }
+  function openSitePanel(kind) {
+    if (!isWork || !settings.enabled) return;
+    closeSitePanel(); closePanels(); void save(true);
+    panelScroll = window.scrollY; panelTrigger = $(`#${kind}-button`);
+    panelContent.replaceChildren();
+    sitePanel.querySelector('h2').textContent = kind === 'comments' ? '评论' : '下载作品';
+    host.dataset.sitePanel = kind;
+    if (kind === 'comments') {
+      const feedback = document.querySelector('#feedback');
+      if (feedback) {
+        feedbackHome = document.createComment('Original AO3 feedback position'); feedback.before(feedbackHome);
+        movedFeedback = feedback; panelContent.append(feedback);
+      } else panelContent.textContent = '当前页面没有提供评论区域。请在原站页面查看评论权限或登录提示。';
+    } else {
+      const links = [...document.querySelectorAll('.work.navigation .download a[href], li.download a[href]')];
+      const formats = document.createElement('nav'); formats.className = 'cl-download-formats'; formats.setAttribute('aria-label', 'AO3 下载格式');
+      const seen = new Set();
+      for (const original of links) {
+        const url = new URL(original.href, location.href);
+        if (url.protocol !== 'https:' || url.username || url.password || seen.has(url.href)) continue;
+        seen.add(url.href);
+        const link = document.createElement('a'); link.href = url.href; link.textContent = original.textContent.trim();
+        // These are AO3's real download URLs, including its filename and query.
+        if (original.hasAttribute('download')) link.setAttribute('download', original.getAttribute('download'));
+        formats.append(link);
+      }
+      const note = document.createElement('p'); note.textContent = seen.size ? '选择 AO3 提供的原始格式下载完整作品。' : 'AO3 当前没有为这篇作品提供下载选项。';
+      panelContent.append(note, formats);
+    }
+    document.documentElement.classList.add('cl-site-panel-open');
+    if (sitePanel.showModal) sitePanel.showModal(); else sitePanel.setAttribute('open', '');
+    sitePanel.querySelector('#cl-site-panel-close').focus({ preventScroll: true });
+    // Let AO3 load its comment thread through its own remote link.
+    if (kind === 'comments') {
+      const load = document.querySelector('#show_comments_link a[href*="show_comments"], #show_comments_link_top a[href*="show_comments"]');
+      if (load?.dataset.remote === 'true') load.click();
+    }
+  }
+  sitePanel.querySelector('#cl-site-panel-close').addEventListener('click', closeSitePanel);
+  sitePanel.addEventListener('cancel', event => { event.preventDefault(); closeSitePanel(); });
+  sitePanel.addEventListener('click', event => { if (event.target === sitePanel) closeSitePanel(); });
+  $('#comments-button').addEventListener('click', () => openSitePanel('comments'));
+  $('#downloads-button').addEventListener('click', () => openSitePanel('downloads'));
   $('.tools').insertAdjacentHTML('afterbegin', '<button id="library-button" aria-label="书签与阅读历史" aria-controls="library" aria-expanded="false">☰ 书架</button><button id="save-bookmark" title="手动保存当前阅读位置">☆ 记住这里</button>');
   ui.append(Object.assign(document.createElement('aside'), { id: 'library', className: 'sidebar', hidden: true }));
   $('#library').setAttribute('aria-label', '书签与阅读历史');
@@ -316,7 +379,8 @@
     style.setProperty('--cl-gap', `${settings.gap}em`);
     $('.top').hidden = !settings.enabled;
     $('.bottom').hidden = !reading;
-    for (const id of ['contents-button', 'appearance-button', 'save-bookmark', 'mini-save']) $(`#${id}`).hidden = !reading;
+    for (const id of ['contents-button', 'appearance-button', 'save-bookmark', 'mini-save', 'comments-button', 'downloads-button']) $(`#${id}`).hidden = !reading;
+    if (!reading) closeSitePanel();
     $('#bookmark-form').hidden = libraryView !== 'bookmarks' || !reading;
     if (!reading) { closePanels(); $('.resume').hidden = true; }
     setLibraryExpanded(settings.libraryOpen, false);
@@ -364,7 +428,7 @@
   }
   let progressWrite = Promise.resolve();
   async function save(manual = false) {
-    if (!settings.enabled || !isWork || !ready || navigatingToPosition || (!interacted && !manual)) return;
+    if (!settings.enabled || !isWork || !ready || sitePanel.open || navigatingToPosition || (!interacted && !manual)) return;
     const raw = currentPosition();
     if (raw && storage) {
       const position = describePosition(raw);
@@ -460,6 +524,12 @@
   });
   $('.chapter-list').addEventListener('click', () => { interacted = true; void save(); closePanels(); });
   function revealHash() {
+    if (/^#(?:comments|comment_|add_comment)/.test(location.hash) && settings.enabled && isWork) {
+      if (!sitePanel.open) openSitePanel('comments');
+      const target = document.getElementById(location.hash.slice(1));
+      if (target && sitePanel.contains(target)) target.scrollIntoView?.({ block: 'start' });
+      return;
+    }
     if (!pager?.enabled || !location.hash) return;
     try { const target = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (target && workskin.contains(target)) pager.reveal(target); } catch { /* Malformed author anchor. */ }
   }
@@ -473,6 +543,7 @@
   $('#dismiss-resume').addEventListener('click', () => { $('.resume').hidden = true; });
   document.addEventListener('keydown', event => {
     if (!settings.enabled) return;
+    if (sitePanel.open) { if (event.key === 'Escape') { event.preventDefault(); closeSitePanel(); } return; }
     const target = event.composedPath()[0];
     if (siteHeader?.contains(target)) return;
     if (target instanceof Element && (target.matches('input, textarea, select') || target.isContentEditable)) return;
@@ -495,7 +566,7 @@
   window.addEventListener('wheel', () => { interacted = true; }, { passive: true });
   let wheelAmount = 0, lastWheel = 0, lastTurn = 0;
   document.addEventListener('wheel', event => {
-    if (!pager?.enabled || event.ctrlKey || event.target === host || siteHeader?.contains(event.target) || !$('#appearance').hidden || !$('#contents').hidden) return;
+    if (!pager?.enabled || sitePanel.open || event.ctrlKey || event.target === host || siteHeader?.contains(event.target) || !$('#appearance').hidden || !$('#contents').hidden) return;
     event.preventDefault();
     const now = Date.now();
     if (now - lastWheel > 180) wheelAmount = 0;
@@ -530,6 +601,12 @@
     if (!isWork) { if (settings.libraryOpen) await refreshLibrary(); ready = true; return; }
     try { await library.visit(work); } catch { storageError(); }
     if (settings.libraryOpen) await refreshLibrary();
+    if (/^#(?:comments|comment_|add_comment)/.test(location.hash)) {
+      if (saved && samePage(safeUrl(saved.url))) {
+        await document.fonts.ready; await new Promise(resolve => requestAnimationFrame(resolve)); restore(saved);
+      }
+      ready = true; revealHash(); return;
+    }
     const bookmarkId = location.hash.match(/^#cl-bookmark=([a-zA-Z0-9-]{1,64})$/)?.[1];
     const explicitResume = location.hash === '#cl-resume';
     let requestedPosition = null;

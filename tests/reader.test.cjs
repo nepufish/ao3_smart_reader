@@ -24,6 +24,61 @@ async function boot(path = '/works/101/chapters/201', initial = {}, prepare = ()
   await new Promise(resolve => setTimeout(resolve, 35));
   return { w, data, scrolls, ui: w.document.querySelector('#chapterlight-root')?.shadowRoot, close: () => w.close() };
 }
+test('comments preserve original forms, lazy loading, drafts and paging position', async () => {
+  let feedback,form,loads=0;
+  const b=await boot(undefined,{},w=>{
+    w.document.querySelector('#feedback')?.remove();
+    feedback=w.document.createElement('div');feedback.id='feedback';
+    feedback.innerHTML='<div id="show_comments_link"><a href="/comments/show_comments?chapter_id=201" data-remote="true">Comments (2)</a></div><a id="comments"></a><form action="/comments" method="post"><input type="hidden" name="authenticity_token" value="test-csrf"><textarea name="comment[content]"></textarea><button>Post</button></form><div id="comments_placeholder" style="display:none"></div>';
+    w.document.querySelector('#main').append(feedback);form=feedback.querySelector('form');
+    feedback.querySelector('a').addEventListener('click',e=>{e.preventDefault();loads++;feedback.querySelector('#comments_placeholder').textContent='Original comment thread';});
+  });
+  const parent=feedback.parentNode,count=b.ui.querySelector('#page-count').textContent;
+  b.ui.querySelector('#comments-button').click();
+  assert.equal(loads,1);assert.equal(b.w.document.querySelector('#cl-site-panel form'),form);
+  assert.equal(new b.w.FormData(form).get('authenticity_token'),'test-csrf');
+  form.querySelector('textarea').value='Unsubmitted draft';
+  const wheel = new b.w.WheelEvent('wheel', { deltaY: 200, bubbles: true, cancelable: true });
+  form.dispatchEvent(wheel); assert.equal(wheel.defaultPrevented, false);
+  b.w.document.dispatchEvent(new b.w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+  assert.equal(b.ui.querySelector('#page-count').textContent,count);
+  b.w.document.querySelector('#cl-site-panel-close').click();
+  assert.equal(feedback.parentNode,parent);assert.equal(form.querySelector('textarea').value,'Unsubmitted draft');
+  assert.equal(b.w.document.querySelector('#chapterlight-root').dataset.sitePanel,undefined);
+  b.ui.querySelector('#comments-button').click();b.ui.querySelector('#reader-switch').click();
+  await new Promise(r=>setTimeout(r,20));assert.equal(feedback.parentNode,parent);
+  b.close();
+});
+test('comment deep links restore the reading place and comment scrolling cannot overwrite it', async () => {
+  const position = { url: 'https://archiveofourown.org/works/101/chapters/201', chapter: 'chapter-1', index: 5, offset: 0, text: 'saved passage' };
+  const b = await boot('/works/101/chapters/201?show_comments=true#comments', {
+    settings: { mode: 'scroll' }, 'progress:101': position
+  }, w => { w.HTMLElement.prototype.scrollIntoView = () => {}; });
+  assert.equal(b.w.document.querySelector('#cl-site-panel').open, true);
+  assert.ok(b.scrolls.length > 0);
+  await new Promise(r => setTimeout(r, 20));
+  const saved = structuredClone(b.data['progress:101']);
+  b.w.document.dispatchEvent(new b.w.Event('pointerdown', { bubbles: true }));
+  b.w.dispatchEvent(new b.w.Event('scroll'));
+  b.w.dispatchEvent(new b.w.Event('pagehide'));
+  await new Promise(r => setTimeout(r, 30));
+  assert.deepEqual(b.data['progress:101'], saved);
+  b.close();
+});
+
+test('download choices use the original AO3 links and do not invent unavailable formats', async () => {
+  const b=await boot(undefined,{},w=>{
+    w.document.querySelector('#main').insertAdjacentHTML('afterbegin','<ul class="work navigation"><li class="download"><ul><li><a href="/downloads/101/Story.epub?updated_at=123">EPUB</a></li><li><a href="/downloads/101/Story.pdf?updated_at=123">PDF</a></li><li><a href="javascript:alert(1)">Unsafe</a></li></ul></li></ul>');
+  });
+  b.ui.querySelector('#downloads-button').click();
+  const links=[...b.w.document.querySelectorAll('.cl-download-formats a')];
+  assert.equal(links.length,2);assert.equal(links[0].href,'https://archiveofourown.org/downloads/101/Story.epub?updated_at=123');
+  assert.equal(links[1].textContent,'PDF');
+  b.w.document.querySelector('#cl-site-panel-close').click();b.w.document.querySelector('.download').remove();
+  b.ui.querySelector('#downloads-button').click();
+  assert.equal(b.w.document.querySelectorAll('.cl-download-formats a').length,0);
+  assert.match(b.w.document.querySelector('.cl-site-panel-content').textContent,/没有.*下载/);b.close();
+});
 test('chapter reader preserves prose, builds all chapters and respects first-chapter boundary', async () => {
   const b = await boot();
   assert.ok(b.w.document.documentElement.classList.contains('cl-reading'));

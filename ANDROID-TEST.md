@@ -1,3 +1,11 @@
+# Android 0.8.3 comments and downloads validation
+
+- 41 Node tests pass, including preserving original AO3 forms/CSRF fields and handlers, draft retention, comment deep links, reading-position protection, wheel/keyboard isolation, and exact native download links with unavailable-format handling.
+- Android unit tests, lint, debug/instrumentation builds and signed release build pass. Lint reports no issues. Package version is 0.8.3 / code 803; extension version is 0.6.5. The release signing certificate is unchanged.
+- `MobileFlowTest` passes on the Android 15 / API 35 Pixel 6 emulator with fresh app data. It verifies native comments/download buttons, original form identity behavior, retained drafts, Android Back dismissal and exact download choices, alongside the existing reading/browsing flow. An initial rerun failed its fresh-launch `/works` assertion because the emulator retained the previous session; resetting only the dedicated test app's data resolved that prerequisite.
+- Desktop local preview verifies opening/closing comments with an unsubmitted draft and the no-downloads message. Desktop and Android screenshots were visually inspected.
+- Tests use original local fixtures. No live comment was submitted, no authenticated live reply flow was exercised, and no complete network file download or physical-device installer flow is claimed. The Android download manager uses AO3's own URL with that URL's session cookies; Android 8–9 delegates to the external browser.
+
 # Android 0.8.2 rename validation
 
 The Android launcher label, profile branding and installation prompts now use 星肆, through one `app_name` resource. `testDebugUnitTest`, `lintDebug` and the signed release build pass; lint reports no issues. `aapt dump badging` confirms the packaged application label is 星肆, version 0.8.2 / code 802, with the original package ID. This is a branding-only change; no new physical-device test was performed. Existing signing identity, data keys and updater asset filenames are retained.

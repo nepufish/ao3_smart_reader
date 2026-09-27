@@ -97,6 +97,17 @@ public class MobileFlowTest {
         tapPage(350);assertFalse("A held touch must not reveal controls",(Boolean)field("controlsVisible"));
         tapPage(70);assertTrue((Boolean)field("controlsVisible"));
         assertEquals(dimensions,js("innerWidth+','+innerHeight"));
+        js("document.querySelector('#main').insertAdjacentHTML('beforeend', '<ul class=\"work navigation\"><li class=\"download\"><ul><li><a href=\"/downloads/101/Story.epub?updated_at=123\">EPUB</a></li><li><a href=\"/downloads/101/Story.pdf\">PDF</a></li></ul></li></ul><div id=\"feedback\"><h3>评论</h3><p>读者：喜欢窗边的灯与旧书店，谢谢这个温暖的故事。</p><form action=\"/comments\" method=\"post\"><label>发表评论<textarea name=\"comment[content]\"></textarea></label><input type=\"hidden\" name=\"authenticity_token\" value=\"fixture\"><button type=\"submit\">Comment</button></form></div>')");
+        click("评论");Thread.sleep(500);assertEquals("comments",state().optString("panel"));
+        assertEquals(View.GONE,((View)field("header")).getVisibility());
+        js("document.querySelector('#feedback textarea').value='未提交的草稿'");screenshot("09-comments");
+        main(()->activity.getOnBackPressedDispatcher().onBackPressed());Thread.sleep(500);
+        assertEquals("",state().optString("panel"));
+        assertEquals("\"未提交的草稿\"",js("document.querySelector('#feedback textarea').value"));
+        click("下载作品");Thread.sleep(500);assertEquals("downloads",state().optString("panel"));
+        assertEquals("2",js("document.querySelectorAll('.cl-download-formats a').length"));
+        assertEquals("\"https://archiveofourown.org/downloads/101/Story.epub?updated_at=123\"",js("document.querySelector('.cl-download-formats a').href"));screenshot("10-downloads");
+        main(()->activity.getOnBackPressedDispatcher().onBackPressed());Thread.sleep(500);
         click("书签");Thread.sleep(700);assertTrue(Integer.parseInt(js("Object.keys(localStorage).filter(k=>k.startsWith('chapterlight:bookmark:')).length"))>0);
         click("排版");screenshot("04-typography");click("滚动");assertEquals("scroll",state().optString("mode"));click("翻页");assertEquals("paged",state().optString("mode"));click("夜读");click("关闭");screenshot("05-night");
         click("排版");click("暖纸");click("关闭");

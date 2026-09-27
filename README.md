@@ -4,7 +4,7 @@ A dependency-free Chrome / Edge extension focused on reading Chinese novels on A
 
 ## 星肆 · Android app
 
-Version 0.8.2 renames the Android app to **星肆**. It includes fullscreen reading, tap-to-reveal glass controls and a compact search header: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
+Version 0.8.3 adds original AO3 comments and download options to **星肆**. It includes fullscreen reading, tap-to-reveal glass controls and a compact search header: native **书架 / 发现 / 我的** screens, glass-inspired navigation, full-width work cards and native search/typography sheets. It opens **`/works`** by default. Switch between AO3 and AO3-cn without an address bar. Animated paging, bookmarks and saved positions remain available; updates are under **我的 → 检查更新**.
 
 Download **Chapterlight.apk** from [GitHub Releases](https://github.com/nepufish/ao3_smart_reader/releases/latest). Android 8.0+ with a current Android System WebView is required. See [Android build/release instructions](android/README.md), [design notes](ANDROID-DESIGN.md), and [validation coverage](ANDROID-TEST.md).
 
@@ -25,6 +25,15 @@ Allowed HTTPS domains: `archiveofourown.org`, `www.archiveofourown.org`, `ao3-cn
 The Chapterlight bar stays available on native AO3 pages, including search, results, tags, and profiles. AO3’s own red **Fandoms / Browse / Search / About** navigation and original search form remain available inside the reader, including their dropdowns. Their links open the site’s normal pages; **书架** remains available throughout. On novel pages, the native navigation sits directly below the Chapterlight toolbar and the text starts below both bars. Page height and saved scroll anchors account for the navigation height. On browsing pages, the original AO3 header and content stay in their normal layout below the Chapterlight toolbar. Reading mode starts only on a work/chapter URL with actual story text; browsing and content-gate pages are not reformatted or recorded as reading history.
 
 Use **字 · 排版** to adjust the theme, Chinese font, text size, reading width, line and paragraph spacing, author’s notes, and automatic resume. **目录** opens the chapter list. The large floating **阅读模式** switch stays visible on every supported page, including search, tags, profiles, and novels. At the bottom right it turns all Chapterlight features on or off, with a raised hover effect and keyboard focus support. Switching off saves your reading position, restores the original AO3 layout, and hides the Chapterlight toolbar and sidebar; only the switch remains. The off state persists across reloads and navigation until you turn it back on. Re-enabling restores your reading preferences and follows your automatic-resume setting. Typography and paging preferences persist. After updating an unpacked extension, reload it on the extensions page and refresh your AO3 tabs.
+
+## Comments and downloads
+
+On a work, the desktop toolbar has **评论** and **下载** buttons. In Android, tap the reading page once to reveal the top comment and download icons.
+
+- **评论** opens the original AO3 feedback area, including its login/permission notices, comment form, replies and pagination. AO3 loads and submits its own comments. Closing the panel returns to the reading position and retains an unsubmitted draft on the current page; drafts are not saved across navigation or reloads.
+- **下载** lists only the formats and links AO3 provides for that work (for example EPUB or PDF). It downloads the original file for the complete work; no conversion or separate download service is involved. If the site has disabled downloads, the panel explains this.
+- On Android 10+, downloads use the system download manager with the current site's cookies and appear in Downloads and system notifications. Android 8–9 opens the original link in the external browser, which may require its own login.
+- Desktop extension **0.6.5** is also attached to [the release](https://github.com/nepufish/ao3_smart_reader/releases/latest) as **Chapterlight-extension.zip**. Extract it, load that folder in Chrome, then reload existing AO3 tabs.
 
 ## Reading library and saved positions
 
@@ -58,16 +67,16 @@ The left **书签与历史** panel opens in full size by default. Use **«** or 
 - Changes to typography, window dimensions, fonts, or loaded images repaginate the content. Reading places use a text anchor, including the character within a paragraph, rather than a fixed page number.
 - Page counts cover the loaded AO3 content, including visible summaries and notes. **上一章 / 下一章** still navigate between chapters; turning the final page does not automatically load another chapter.
 - Keyboard paging does not intercept form fields, links, buttons, or open reader panels. **Alt + Left / Right** remains chapter navigation.
-- Switch to **上下滚动** to reach AO3's feedback, comments, and kudos area. Paging does not load chapters in the background.
+- Use **评论** to open AO3's feedback, comments and kudos area without leaving paging. Paging does not load chapters in the background.
 - Paging retains the native AO3 navigation, hides surrounding work metadata and feedback panels even when they use nested wrappers, and overrides the story container's native scrollbar. Switching back restores the original surrounding elements.
 
 Unusual work skins, tables, or unbreakable embedded content may not paginate cleanly; scrolling mode is available for those works.
 
 ## Privacy and behavior
 
-Only the `storage` permission is requested. Content scripts run throughout the listed domains to show the bar. Story formatting, reading history, and progress recording run only on novel pages with story text. No analytics, backend, external fonts, network requests, or account credentials. Settings, novel history, one latest reading place per work, and manual bookmarks stay in `chrome.storage.local`. Uninstalling removes that data. Records include work titles, author labels, visited times, and short text excerpts to help recover your place after edits; there is no cloud sync.
+Only the `storage` permission is requested. Content scripts run throughout the listed domains to show the bar. Story formatting, reading history, and progress recording run only on novel pages with story text. No analytics, backend, external fonts, or stored account credentials. Comments and downloads use AO3’s original links and site requests. Settings, novel history, one latest reading place per work, and manual bookmarks stay in `chrome.storage.local`. Uninstalling removes that data. Records include work titles, author labels, visited times, and short text excerpts to help recover your place after edits; there is no cloud sync.
 
-The extension retains the original story DOM, links, summaries, formatting, notes, and feedback controls. It does not load chapters in the background, bypass content gates, or submit comments or kudos. Typography may interact with unusually styled works; scrolling mode is available for unusually styled works.
+The extension retains the original story DOM, links, summaries, formatting, notes, and feedback controls. It does not load chapters in the background, bypass content gates, or automatically submit comments or kudos. Typography may interact with unusually styled works; scrolling mode is available for unusually styled works.
 
 Progress means progress through the currently loaded content, not the entire work unless the entire work is loaded. Positions save after you interact and scroll or turn a page, as well as when creating a manual bookmark. Deliberate author anchor links and browser back/forward restoration take precedence over automatic resume. Major author edits or late-loading images can affect restored positions.
 

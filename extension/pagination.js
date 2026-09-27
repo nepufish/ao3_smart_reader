@@ -49,7 +49,7 @@
         // metadata differently. Keep the original story and its ancestors intact.
         for (let branch = this.viewport; branch && branch !== document.body; branch = branch.parentElement) {
           for (const sibling of branch.parentElement?.children || []) {
-            if (sibling === branch || sibling.id === 'chapterlight-root' || sibling.matches('.cl-site-header') || sibling.querySelector('.cl-site-header') || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(sibling.tagName)) continue;
+            if (sibling === branch || sibling.id === 'chapterlight-root' || sibling.id === 'cl-site-panel' || sibling.matches('.cl-site-header') || sibling.querySelector('.cl-site-header') || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(sibling.tagName)) continue;
             if (!sibling.classList.contains('cl-page-background')) {
               sibling.classList.add('cl-page-background');
               this.background.add(sibling);

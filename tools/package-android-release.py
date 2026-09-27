@@ -4,6 +4,7 @@ import hashlib
 import json
 import pathlib
 import shutil
+import zipfile
 
 root = pathlib.Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser()
@@ -20,13 +21,22 @@ shutil.copyfile(source, apk)
 digest = hashlib.sha256(apk.read_bytes()).hexdigest()
 metadata = {'versionCode': int(version['versionCode']), 'versionName': version['versionName'], 'apk': apk.name, 'sha256': digest}
 (output / 'update.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
-(output / 'SHA256SUMS').write_text(f'{digest}  {apk.name}\n', encoding='utf-8')
+extension = output / 'Chapterlight-extension.zip'
+with zipfile.ZipFile(extension, 'w', zipfile.ZIP_DEFLATED) as bundle:
+    for file in sorted((root / 'extension').rglob('*')):
+        if file.is_file():
+            bundle.write(file, file.relative_to(root / 'extension').as_posix())
+extension_digest = hashlib.sha256(extension.read_bytes()).hexdigest()
+(output / 'SHA256SUMS').write_text(f'{digest}  {apk.name}\n{extension_digest}  {extension.name}\n', encoding='utf-8')
 (output / 'release-notes.md').write_text(f'''星肆 {version['versionName']} for Android
 
-- Android app renamed to **星肆** in the launcher, profile screen and update-installation prompts.
-- The app ID, signing certificate, bookmarks, reading history and saved settings remain compatible with existing installations.
-- Fullscreen reading, tap-to-reveal glass tools, search, typography and GitHub updates remain available.
-- Build validation includes reader tests, Android unit tests and lint. This release changes branding only; no new physical-device UI test is claimed.
+- Adds **评论** and **下载作品** to the Android reading toolbar. Tap the reading page once to reveal them. Desktop extension 0.6.5 has the same buttons in its toolbar.
+- Comments use AO3's original feedback area, forms, login notices and reply/pagination links. Returning to reading preserves the reading position and the current page's unsubmitted draft.
+- Downloads use the exact formats and links AO3 provides for the complete work. Android 10+ uses the system download manager and the current site session; Android 8–9 opens the original link in the external browser.
+- Includes 41 passing reader tests, Android unit tests/lint and an Android 15 emulator flow covering comments, draft retention, Back and original download choices. Live comment submission and completed live-site file downloads have not been tested.
+- The app ID and signing certificate are unchanged, preserving installed data when upgrading.
+
+For Chrome/Edge, download **Chapterlight-extension.zip**, extract it, and load the extracted folder from the browser's extensions page in Developer mode. Reload the extension and AO3 tabs after updating.
 
 Download **Chapterlight.apk** below. The filename is retained for compatibility with existing in-app updaters; the installed app is named 星肆. Requires Android 8.0 or newer and an up-to-date Android System WebView. Android will ask you to allow installation from your browser or 星肆. Future releases signed with the same key install over this app and retain its data.
 

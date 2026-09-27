@@ -59,6 +59,8 @@ final class ReaderUi {
     Drawable icon(String name) {
         String data;
         switch(name) {
+            case "comments": data="M4 4L20 4L20 16L10 16L4 21ZM8 8L16 8M8 12L14 12"; break;
+            case "download": data="M12 3L12 16M7 11L12 16L17 11M4 16L4 21L20 21L20 16"; break;
             case "back": data="M15 5L8 12L15 19"; break;
             case "next": data="M9 5L16 12L9 19"; break;
             case "search": data="M20 20L15.5 15.5M17 10A7 7 0 1 1 3 10A7 7 0 1 1 17 10"; break;

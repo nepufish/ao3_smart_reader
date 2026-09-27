@@ -1,7 +1,7 @@
 {
   "name": "chapterlight",
   "private": true,
-  "version": "0.6.4",
+  "version": "0.6.5",
   "engines": { "node": ">=20" },
   "scripts": {
     "preview": "node tools/preview.cjs",

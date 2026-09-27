@@ -40,13 +40,13 @@
   }
   window.ChapterlightMobile = {
     tap(x,y) {
-      if(!document.documentElement.classList.contains('cl-reading') || getSelection()?.toString()) return {};
+      if(!document.documentElement.classList.contains('cl-reading') || host.dataset.sitePanel || getSelection()?.toString()) return {};
       const target=document.elementFromPoint(x*innerWidth,y*innerHeight);
       if(!target || target.closest('a,button,input,textarea,select,summary,[contenteditable=true]')) return {};
       return {intent:'controls'};
     },
     state() {
-      return { reading: document.documentElement.classList.contains('cl-reading'),
+      return { reading: document.documentElement.classList.contains('cl-reading'), panel: host.dataset.sitePanel || '',
         enabled: $('#reader-switch')?.getAttribute('aria-checked') === 'true',
         title: $('.work-title')?.textContent || '', page: $('#page-count')?.textContent || '',
         percentage: $('#percentage')?.textContent || '',
@@ -59,7 +59,8 @@
         nextChapter: $('#next')?.hidden ? '' : $('#next')?.href };
     },
     action(name) {
-      const ids = { next:'page-next', previous:'page-previous', bookmark:'mini-save', toggle:'reader-switch' };
+      if (name === 'closePanel') { document.querySelector('#cl-site-panel-close')?.click(); return; }
+      const ids = { next:'page-next', previous:'page-previous', bookmark:'mini-save', toggle:'reader-switch', comments:'comments-button', downloads:'downloads-button' };
       if (ids[name]) $('#' + ids[name])?.click();
     },
     setting(name, value) {
@@ -95,7 +96,7 @@
   };
   let start = null;
   document.addEventListener('touchstart', event => {
-    if (!document.documentElement.classList.contains('cl-paged') || event.touches.length !== 1
+    if (host.dataset.sitePanel || !document.documentElement.classList.contains('cl-paged') || event.touches.length !== 1
         || event.target === host || event.target.closest('a,button,input,textarea,select,#header') || getSelection()?.toString()) { start=null; return; }
     start={x:event.touches[0].clientX,y:event.touches[0].clientY,time:Date.now()};
   }, {passive:true});
